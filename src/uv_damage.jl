@@ -100,7 +100,7 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
         end
     end
     if record
-        JSON.print(io,merge(v,cell[gene_to_record]))
+        JSON.print(io,"{\"time\":0, \"position\":[], \"id\":[], \"event\":\"end\"}")
         write(io,"]}")
     end
     return(genes,ss,String(take!(io)))
@@ -124,7 +124,7 @@ end
 
 function main(req::String)
     params=JSON.parse(req)
-    main(json_inf(params["scenarios"]), json_inf(params["cell"]), json_inf(params["vars"]), client_id=params["id"])
+    main(json_inf(params["scenarios"]), json_inf(params["genes"]), json_inf(params["default"]), client_id=params["id"])
 end
 
 function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, Any},1}, vars::Dict{String, Any}; client_id="")
