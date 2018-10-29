@@ -7,7 +7,7 @@ using DataFrames
 using CSV
 using Random
 using JSON
-using Pages
+using Pages#master
 using HTTP
 
 include("cell_settings.jl")
