@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="icon" href="favicon-wrench.ico" type="image/x-icon" />
+    <title>Damage Repair Simulation</title>
+    <style>
+     .exit {
+	 fill: brown;
+     }
+     .active_damage {
+	 fill: red;
+     }
+     .repaired_damage {
+	 fill: green;
+     }
+     .pol_movie {
+	 fill: none;
+	 stroke-width: 2px;
+     }
+     .pol_path {
+	 fill: none;
+	 stroke-width: 2px;
+     }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid" >
+      <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">Damage Repair Simulation</h1>
+      <ul class="nav nav-tabs" role="tablist" >
+	<li class="nav-item">
+	  <a class="nav-link active" href="#main"  data-toggle="tab" role="tab">Main</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="#scenarios" data-toggle="tab" role="tab">Scenarios</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="#genes" data-toggle="tab" role="tab">Genes</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="#recalculate" data-toggle="tab" role="tab">Recalculate</a>
+	</li>
+      </ul>
+      <div class="tab-content">
+	<div id="main" class="tab-pane active show" role="tabpanel">
+	  <div class="row">
+	    <div class="col-7">
+	      <svg width="758" height="400" id="cartoon"></svg>
+	      <svg width="600" height="400" id="movie"></svg>
+	      <div class="form-group">
+		<input type="range" class="form-control-range" id="time_slider" onchange="set_time(this.value)">
+	      </div>
+	      <p id="timer"></p>
+	      <table class="table table-sm">
+		<thead>
+		  <tr><th>Site</th><th>Repair Time</th></tr>
+		</thead>
+		<tbody id="repair"></tbody>
+	      </table>
+	    </div>
+	    <div class="col">
+	      <form id="params_form"></form>
+	      <!-- <table class="table table-sm">
+		   <thead>
+		   <tr><th>Parameter</th><th>Value</th></tr>
+		   </thead>
+		   <tbody id="params"></tbody>
+		   </table> -->
+	    </div>
+	  </div>
+	</div>
+	<div id="scenarios"  class="tab-pane" role="tabpanel">
+	  <div id="scene-cards" class="row"></div>
+	  <div id="scene-footer" class="row p-2 d-flex justify-content-between">
+	    <button id="add-scene" type="button" class="btn btn-primary">Add Scenario</button>
+	  </div>
+	</div>
+	<div id="genes"  class="tab-pane" role="tabpanel">
+	  <div id="gene-cards" class="row"></div>
+	  <div id="gene-footer" class="row p-2  d-flex justify-content-between">
+	    <button id="add-gene" type="button" class="btn btn-primary">Add Gene</button>
+	  </div>
+	</div>
+	<div id="recalculate"  class="tab-pane" role="tabpanel">
+	  <p id="json_contents"></p>
+	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
+	</div>
+	<div id="progress"></div>
+      </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="pages.js"></script>
+    <script>
+     Pages.start(window.location.href);
+     var cartoon = d3.select("#cartoon"),
+	 cartoon_width = +cartoon.attr("width");
+     var radius=4;
+     var cartoon_data;
+     var cartoon_ind=0;
+     var movie_ind=0;
+     var margin = {top: 20, right: 10, bottom: 20, left: 10};
+     var width = 600 - margin.left - margin.right,
+	 height = 400 - margin.top - margin.bottom;
+     var xscale = d3.scaleLinear().range([0, width]);
+     var yscale = d3.scaleLinear().range([height, 0]); 
+     var valueline = d3.line()
+		       .x((d,i) => xscale(i))
+		       .y(d => yscale(d))
+		       .curve(d3.curveBasis);
+     var tscale;
+     var anim_data;
+     
+     function pos_to_xy(pos) {
+	 diam=2*radius;
+	 bin = pos/33;
+	 nx = Math.floor(cartoon_width/diam-1);
+	 y = (diam+2) * Math.floor(bin/nx)+diam;
+	 //     x = diam * (nx - Math.abs(bin % (2*nx) - nx))+radius;
+	 x = diam * (bin % nx);
+	 return {x:x, y:y};
+     }
+     function xyi(pos, id) {
+	 return pos.map(function(p, i) {xy=pos_to_xy(p); return {x:xy.x, y:xy.y, id:id[i], pos:p};});
+     }
+     function format_hms(num) {
+	 var h = Math.floor( num / 3600 );
+	 var m = Math.floor((num - h * 3600) / 60 );
+	 var s = Math.floor(num - (h * 3600 + m * 60));
+	 return ( h < 10 ? "0" + h : h ) + ":" + ( m < 10 ? "0" + m : m ) + ":" + ( s < 10 ? "0" + s : s );
+     }
+
+     function I(d) {return d;}
+     
+     function update_cartoon(data) {
+	 update_movie(Math.floor(cartoon_data.pols[cartoon_ind].time/cartoon_data.params.tally_interval)+1);
+	 var pols = cartoon.selectAll("circle")
+			   .data(data, d => d.id);
+	 var t500 = d3.transition()
+		      .duration(500).ease(d3.easeLinear);
+	 pols.exit() 
+	     .attr("class", "exit")
+	     .transition(t500)
+	     .attr("cy", 300)
+	     .attr("cx", d => d.pos*cartoon_width/cartoon_data.params.gene_length)
+	     .style("fill-opacity", 1e-1);
+	 // ENTER new elements present in new data.
+	 pols.enter().append("circle")
+	     .attr("r", radius)
+	     .style("fill-opacity", 1)
+	     .merge(pols)// and update
+	     .attr("cy", d => d.y)
+	     .attr("cx", d => d.x)
+	 cartoon.selectAll("rect")
+	     .attr("class", function(d, i) {
+		 return (cartoon_data.pols[cartoon_ind].time>cartoon_data.repair[i])?"repaired_damage":"active_damage"});
+	 d3.select("#time_slider").property("value", cartoon_ind);
+     }
+
+     function update_movie(ti) {
+	 d3.select("#movie").selectAll(".pol_movie").attr("d", d => valueline(d[ti]));
+     }
+     
+     function update_movies(ti) {
+	 d3.select("#scenarios").selectAll("svg")
+	   .selectAll("path.pol_path").filter(d => ti<d.length)
+	   .attr("d",d => valueline(d[ti]));
+	 d3.select("#genes").selectAll("svg")
+	   .selectAll("path.pol_path").filter(d => ti<d.length)
+	   .attr("d", d => valueline(d[ti]));
+	 d3.selectAll('.movie_timer').text(format_hms(ti*tscale));
+     }
+     
+     function show_damage(data) {
+	 cartoon.selectAll("rect")
+		.data(data)
+		.enter().append("rect")
+     		.attr("class", "active_damage")
+		.attr("width", radius).attr("height", 2*radius)
+		.attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
+	 cartoon.selectAll("line")
+		.data(data)
+		.enter().append("line")
+		.attr("stroke","black")
+		.attr("y1", 300).attr("y2", 300+radius)
+		.attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
+		.attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
+     }
+     function show_form(node, data) {
+	 var rows = node.selectAll('div')
+			.data(data, d => d.key)
+			.enter().filter(d => d.value.Unit!="NA")
+			.append('div').attr("class", "row");
+	 rows.append('label')
+	     .attr("class", "col-sm-4 col-form-label")
+	     .style("text-align","right")
+	     .text(d => d.key);
+	 rows.append("input")
+	     .attr("class", "form-control col-sm-4")
+	     .attr("value", d=>d.value.Value)
+	     .on("input", function(d,i){d.value.Value=+this.value;});
+	 rows.append("span")
+	     .text(d=> d.value.Unit);
+     }
+     function recalculate() {
+	 d3.json("recalculate.json", {
+	     method: "POST",
+	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
+	     headers: {"Content-type": "application/json; charset=UTF-8"}
+	 }).then(show_movies);
+     }
+      function progress(task, n) {
+	  d3.select("#progress").text(task + ": " +  n + "/100");
+      }
+     function show_repair(data) {
+	 var rows = d3.select("#repair").selectAll('tr')
+		      .data(data)
+		      .enter()
+		      .append('tr')
+	 rows.filter(d => d>cartoon_data.params.run_length)
+		      .attr("class", "text-muted");
+	 rows.selectAll('td')
+	     .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}])
+	     .enter().append('td')
+	     .text(d => d.val)
+	     .attr("onclick", function(d,i) {return (i==1)?"set_time(" + (d.raw-15) + ")":"highlight_site(" + (d.raw) +")"});
+     }
+
+     function build_dropdown(node, data, cl) {
+	 var d1=node.selectAll("div.dropdown").data([1])
+		  .enter().append("div").attr("class","dropdown")
+	 d1.append("button")
+		    .attr("class","btn btn-secondary dropdown-toggle")
+		    .attr("type","button")
+		    .attr("data-toggle","dropdown")
+		    .text("New Parameter");
+	 var d2=d1.append("div")
+		  .attr("class","dropdown-menu");
+	 d2.selectAll("a")
+	   .data(data)
+	   .enter().append("a")
+	   .attr("class","dropdown-item "+cl)
+	   .text(d => d.key)
+	   .on("click", add_field);
+     }
+     function add_field(d) {
+	 var form_rows ;
+	 // var myobj = {};
+	 // myobj[d.key]=d.value;
+	 if (d3.select(this).classed("scenario")) {
+	     form_rows= d3.select("#scene-cards").selectAll("div.card-wrap").selectAll("form");
+	     anim_data.scenarios = anim_data.scenarios.map(sc => Object.assign(sc,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     show_form(form_rows,(d2,i) => d3.entries(anim_data.scenarios[i]));
+	 } else {
+	     form_rows= d3.select("#gene-cards").selectAll("div.card-wrap").selectAll("form");
+	     anim_data.genes = anim_data.genes.map(g => Object.assign(g,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     show_form(form_rows,(d2,i) => d3.entries(anim_data.genes[i]));
+	 }
+     }
+     
+     function build_new_card(wrap) {
+	 var card = wrap.append("div").attr("class","card");
+	 var head = card
+	     .append("div").attr("class", "card-title")
+	     .style("color","white")
+	     .append("div").attr("class", "row");
+	 head
+	     .append("input").attr("type", "text")
+	     .attr("class", "form-control-plaintext col-sm-9 form-title")
+	     .style("color", "white")
+	     .on("input", function(d){d.name.Value=this.value;});
+	 head
+	     .append("input").attr("type", "color")
+	     .attr("class", "col-sm-2 picker")
+	     .on("input", function(d,i){d.colour.Value=this.value; show_movies();});
+	 head
+	     .append("span")
+	     .attr("class", "form-control-plaintext col-sm-1")
+	     .attr("style","cursor:not-allowed")
+	     .html("&times;")
+	     .on("click", remove_card);
+	 show_form(card.append("form"),d => d3.entries(d));
+	 card
+	     .append("div").attr("class", "card-body")
+	     .append("svg")
+	     .attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom)
+	     .attr("class", "card-text")
+	     .append("g")
+	     .attr("class","track-group")
+	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+	 card.selectAll("svg > g")
+	     .append("g")
+	     .attr("transform", "translate(0," + height + ")")
+	     .call(d3.axisBottom(xscale));
+	 card.selectAll("svg > g")
+	     .append("text").attr("x",width*.8).attr("y", height*.2)
+	     .attr("class","movie_timer")
+	     .text("0");
+     }
+     function remove_card(d) {
+	 var i;
+	 if (this.parentNode.parentNode.parentNode.parentNode.parentNode.id=="gene-cards") {
+	     i= d3.select("#gene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
+	     anim_data.genes.splice(i,1);
+	     anim_data.data.forEach(x => x.splice(i,1));
+	 } else {
+	     i = d3.select("#scene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
+	     anim_data.scenarios.splice(i,1);
+	     anim_data.data.splice(i,1);
+	 }
+	 show_movies();
+     }
+     function update_card(card, dat, annot_within) {
+	 card.style("border-color", (d) => d.colour.Value);
+	 card.select(".card-title").style("background-color", d => d.colour.Value);
+	 card.select(".picker").property("value", d => d.colour.Value);
+	 card.select(".form-title").attr("value",d => d.name.Value);
+	 var paths=card.select("g.track-group").selectAll("path.pol_path")
+		       .data((d,i) => dat[i]);
+	 paths.exit().remove();
+	 paths.enter().append("path")
+	      .attr("class","pol_path")
+	 .merge(paths)
+	     .attr("stroke", (d,i) => annot_within[i].colour.Value)
+	      .attr("d", (d,i) => valueline(d[0]));
+     }
+
+     const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
+
+     function set_time(v) {
+	 ind=0;
+	 while (cartoon_data.pols[ind].time < v) {
+	     ind++;
+	 }
+	 cartoon_ind=ind;
+	 cartoon.selectAll("circle").filter(".exit").remove();
+     }
+     function highlight_site(ind) {
+	 d3.selectAll("rect").filter((d,i) => i==ind)
+	   .transition().attr("height", radius*4).attr("width", radius*2)
+	   .transition().attr("height", radius*2).attr("width", radius);
+     }
+      function clone_card(obj, add) {
+	  copy = {};
+	  for (var attr in obj) {
+              if (obj.hasOwnProperty(attr)) copy[attr] = {Value:obj[attr].Value, Unit:obj[attr].Unit};
+          }
+	  return Object.assign(copy, add);
+      }
+
+     d3.select('#add-scene')
+    .on('click', function(d, i) {
+	copy = {};
+	   anim_data.scenarios.push(clone_card(anim_data.scenarios[0],
+						  {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+	   var card = d3.select("#scene-cards").selectAll("div.card-wrap")
+			.data(anim_data.scenarios);
+	   card.enter().append("div").attr("class","col-sm-6 card-wrap")
+	       .call(build_new_card)
+	       .call(update_card, [[0]], anim_data.genes);
+       });
+     d3.select('#add-gene')
+       .on('click', function(d, i) {	
+	   anim_data.genes.push(clone_card(anim_data.genes[0],
+					      {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+	   var card = d3.select("#gene-cards").selectAll("div.card-wrap")
+			.data(anim_data.genes);
+	   card.enter().append("div").attr("class","col-sm-6 card-wrap")
+	       .call(build_new_card)
+	       .call(update_card, [[0]], anim_data.scenarios);
+       });
+     function load_cartoon(d) {
+	 cartoon_data=d;
+	 show_damage(d.damage);
+	 show_repair(d.repair);
+	 update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id));
+	 d3.select("#time_slider").property("max", cartoon_data.params.run_length);
+	 d3.interval(function() {
+	     update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id))
+	     d3.select("#timer").text(format_hms(cartoon_data.pols[cartoon_ind].time));
+	     cartoon_ind = (cartoon_ind+1) % cartoon_data.pols.length;}, 1);
+     }
+     function show_summary_movie() {
+	 var all_movie_scenarios =  d3.select("#movie").selectAll("g")
+				      .data(anim_data.data);
+	 all_movie_scenarios.exit().remove();
+	 var all_tracks = all_movie_scenarios
+	     .enter().append("g")
+	     .merge(all_movie_scenarios)
+	     .attr("stroke",(d,i) => anim_data.scenarios[i].colour.Value)
+	     .selectAll("path")
+	     .data(I);
+	 all_tracks.exit().remove();
+	 all_tracks
+	     .enter().append("path")
+	     .attr("class", "pol_movie")
+	     .merge(all_tracks)
+	     .attr("d", d => valueline(d[1]));
+     }
+     d3.json("anim_file.json").then(show_movies);
+     function show_movies(anim) {
+	 if (typeof anim !== "undefined") {
+	     anim_data=anim;
+	     if (anim.hasOwnProperty('cartoons')) {
+		 load_cartoon(anim.cartoons[0]);
+	     } else {
+		 d3.json("test.json").then(load_cartoon);
+	     }
+	 }
+	 show_form(d3.select("#params_form"), d3.entries(anim_data.default));
+	 show_summary_movie();
+	 var maxy=anim_data.data.map(z => z.map(y => y.map(x => x.reduce(maxer)).reduce(maxer)).reduce(maxer)).reduce(maxer);
+	 var maxx = anim_data.data.map(y => y.map(x => x[1].length).reduce(maxer)).reduce(maxer)
+	 xscale.domain([0, maxx]);
+	 yscale.domain([0, maxy]);
+	 var maxti = anim_data.data[0][0].length;
+	 tscale = anim_data.default.tally_interval.Value;
+	 // Scenario cards
+	 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
+		       .data(anim_data.scenarios, d => d.name.Value);
+	 cards.exit().remove();
+	 cards.enter().append("div").attr("class","col-sm-6 card-wrap")
+	      .call(build_new_card)
+	      .merge(cards)
+	      .call(update_card, anim_data.data, anim_data.genes);
+	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
+	 // Gene Cards
+	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
+		   .data(anim_data.genes, d => d.name.Value);
+	 cards.exit().remove();
+	 cards.enter().append("div").attr("class","col-sm-6 card-wrap")
+	      .call(build_new_card)
+	      .merge(cards)
+	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
+	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
+	 d3.interval(function() {
+	     update_movies(movie_ind);
+	     movie_ind = (movie_ind+1) % maxti;}, 200);
+     };
+    </script>
+  </body>
+</html>
