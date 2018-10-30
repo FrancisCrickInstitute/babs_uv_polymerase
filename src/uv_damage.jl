@@ -100,7 +100,7 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
         end
     end
     if record
-        JSON.print(io,"{\"time\":0, \"position\":[], \"id\":[], \"event\":\"end\"}")
+        write(io,"{\"time\":0, \"position\":[], \"id\":[], \"event\":\"end\"}")
         write(io,"]}")
     end
     return(genes,ss,String(take!(io)))
