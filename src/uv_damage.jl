@@ -180,7 +180,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
     write(path_data, ",\n \"default\": ")
     JSON.print(path_data, Dict(v => Dict("Value"=>vars[v], "Unit"=>var_units[v]) for v in keys(vars)))
     write(path_data, ",\n \"cartoons\": ")
-    write(path_data, cartoon)
+    JSON.print(path_data, Dict(v => JSON.parse(cartoon[v]) for v in keys cartoon))
     write(path_data,"}\n")
     return String(take!(path_data))
 end
