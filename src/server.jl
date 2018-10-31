@@ -3,10 +3,10 @@ function start_server()
         read(joinpath(@__DIR__, "../www/index.html"),String)
     end
     Endpoint("anim_file.json") do request::HTTP.Request
-        read(joinpath(@__DIR__, "..//anim_file.json"),String)
+        read(joinpath(@__DIR__, "../www/anim_file.json"),String)
     end
     Endpoint("test.json") do request::HTTP.Request
-        read(joinpath(@__DIR__, "..//test.json"),String)
+        read(joinpath(@__DIR__, "../www/test.json"),String)
     end
     Post("recalculate.json") do request::HTTP.Request
         response = main(String(request.body))
