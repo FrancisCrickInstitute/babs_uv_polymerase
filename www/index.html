@@ -50,8 +50,9 @@
 	      <svg width="600" height="400" id="movie"></svg>
 	      <div class="form-group">
 		<input type="range" class="form-control-range" id="time_slider" onchange="set_time(this.value)">
+		<input type="checkbox" checked id="pauser">
+		<p id="timer"></p>
 	      </div>
-	      <p id="timer"></p>
 	      <table class="table table-sm">
 		<thead>
 		  <tr><th>Site</th><th>Repair Time</th></tr>
@@ -438,8 +439,10 @@
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
 	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
 	 d3.interval(function() {
-	     update_movies(movie_ind);
-	     movie_ind = (movie_ind+1) % maxti;}, 200);
+	     if (d3.select("#pauser").property("checked")) {
+		 update_movies(movie_ind);
+		 movie_ind = (movie_ind+1) % maxti;}
+	     }, 200);
      };
     </script>
   </body>
