@@ -104,6 +104,8 @@
      var cartoon_data;
      var cartoon_ind=0;
      var movie_ind=0;
+     var movie_timer;
+     var cartoon_timer;
      var margin = {top: 20, right: 10, bottom: 20, left: 10};
      var width = 600 - margin.left - margin.right,
 	 height = 400 - margin.top - margin.bottom;
@@ -177,19 +179,23 @@
      }
      
      function show_damage(data) {
-	 cartoon.selectAll("rect")
-		.data(data)
-		.enter().append("rect")
-     		.attr("class", "active_damage")
-		.attr("width", radius).attr("height", 2*radius)
-		.attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
-	 cartoon.selectAll("line")
-		.data(data)
-		.enter().append("line")
-		.attr("stroke","black")
-		.attr("y1", 300).attr("y2", 300+radius)
-		.attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
-		.attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
+	 var rect=cartoon.selectAll("rect")
+			 .data(data);
+	 rect.enter().append("rect")
+     	     .attr("class", "active_damage")
+	     .attr("width", radius).attr("height", 2*radius)
+	   .merge(rect)
+	     .attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
+	 rect.exit().remove();
+	 var line=cartoon.selectAll("line")
+		.data(data);
+	 line.enter().append("line")
+	     .attr("stroke","black")
+	     .attr("y1", 300).attr("y2", 300+radius)
+	   .merge(line)
+	     .attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
+	     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
+	 line.exit().remove();
      }
      function show_form(node, data) {
 	 var rows = node.selectAll('div')
@@ -208,6 +214,8 @@
 	     .text(d=> d.value.Unit);
      }
      function recalculate() {
+	 cartoon_timer.stop();
+	 movie_timer.stop();
 	 d3.json("recalculate.json", {
 	     method: "POST",
 	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
@@ -219,14 +227,18 @@
       }
      function show_repair(data) {
 	 var rows = d3.select("#repair").selectAll('tr')
-		      .data(data)
-		      .enter()
-		      .append('tr')
-	 rows.filter(d => d>cartoon_data.params.run_length)
+		      .data(data);
+	 rows.exit().remove();
+	 var all_rows = rows.enter()
+			    .append('tr')
+			    .merge(rows);
+	 all_rows.filter(d => d>cartoon_data.params.run_length)
 		      .attr("class", "text-muted");
-	 rows.selectAll('td')
-	     .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}])
+	 var filled_rows = all_rows.selectAll('td')
+				   .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}]);
+	 filled_rows
 	     .enter().append('td')
+	   .merge(filled_rows)
 	     .text(d => d.val)
 	     .attr("onclick", function(d,i) {return (i==1)?"set_time(" + (d.raw-15) + ")":"highlight_site(" + (d.raw) +")"});
      }
@@ -375,12 +387,13 @@
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
      function load_cartoon(d) {
+	 cartoon_ind=1;
 	 cartoon_data=d;
 	 show_damage(d.damage);
 	 show_repair(d.repair);
 	 update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id));
 	 d3.select("#time_slider").property("max", cartoon_data.params.run_length);
-	 d3.interval(function() {
+	 cartoon_timer = d3.interval(function() {
 	     update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id))
 	     d3.select("#timer").text(format_hms(cartoon_data.pols[cartoon_ind].time));
 	     cartoon_ind = (cartoon_ind+1) % cartoon_data.pols.length;}, 1);
@@ -438,7 +451,7 @@
 	      .merge(cards)
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
 	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
-	 d3.interval(function() {
+	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;}
