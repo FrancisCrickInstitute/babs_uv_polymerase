@@ -108,7 +108,7 @@ function tally(gene::Gene, event::indexed_event, elapsed::Float64)
     move_pols!(gene, elapsed)
     gene.events.tally.time[1] += gene.vars["tally_interval"]
    # bin = div.(floor.(Int, gene.pol_position.-1), gene.vars["tally_binsize"])
-    bin = [div(floor(Int, posn-1), gene.vars["tally_binsize"]) for (i,posn) in enumerate(gene.pol_position) if gene.pol_state=="active"]
+    bin = [div(floor(Int, posn-1), gene.vars["tally_binsize"]) for (i,posn) in enumerate(gene.pol_position) if gene.pol_state[i]=="active"]
     if (length(bin)!=0)
         gene.tally_matrix[:,1+gene.history[:tally]] .= counts(bin, UnitRange(0,size(gene.tally_matrix,1)-1))
     end
