@@ -12,6 +12,7 @@ const bp=1
 const kb=1000bp
 
 const vars = Dict{String, Any}(
+    "Type"       => 0,
     "gene_length"       => 63kb,
     "initiation_period" => 2.5seconds,
     "uv_distance"       => 10kb,
@@ -34,6 +35,7 @@ const vars = Dict{String, Any}(
 )
 
 const var_units = Dict{String, String}(
+    "Type"       => "Active|All",
     "gene_length"       => "bp",
     "initiation_period" => "s",
     "uv_distance"       => "bp",

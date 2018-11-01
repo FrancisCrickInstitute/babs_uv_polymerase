@@ -50,7 +50,6 @@
 	      <svg width="600" height="400" id="movie"></svg>
 	      <div class="form-group">
 		<input type="range" class="form-control-range" id="time_slider" onchange="set_time(this.value)">
-		<input type="checkbox" checked id="pauser">
 		<p id="timer"></p>
 	      </div>
 	      <table class="table table-sm">
@@ -88,6 +87,8 @@
 	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
 	</div>
 	<div id="progress"></div>
+	<div><input type="checkbox" checked id="pauser"> Animate</div>
+
       </div>
     </div>
     
@@ -197,6 +198,17 @@
 	     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
 	 line.exit().remove();
      }
+     function add_radio(d) {
+	 var row=d3.select(this);
+	 var options = d.value.Unit.split("|");
+	 var buttons=row.selectAll("input").data(options);
+	 buttons.exit().remove();
+	 buttons.enter()
+		.append("input").attr("type","radio")
+		.merge(buttons)
+		.text(I);
+	 }
+	 
      function show_form(node, data) {
 	 var rows = node.selectAll('div')
 			.data(data, d => d.key)
@@ -206,6 +218,7 @@
 	     .attr("class", "col-sm-4 col-form-label")
 	     .style("text-align","right")
 	     .text(d => d.key);
+	 rows.filter(d => d.Unit.includes("|")).each(add_radio);
 	 rows.append("input")
 	     .attr("class", "form-control col-sm-4")
 	     .attr("value", d=>d.value.Value)
