@@ -109,7 +109,7 @@ function tally(gene::Gene, event::indexed_event, elapsed::Float64)
     gene.events.tally.time[1] += gene.vars["tally_interval"]
     if (length(gene.pol_position)!=0)
 #        gene.tally_matrix[:,1+gene.history[:tally]] .= counts(div.(floor.(Int, gene.pol_position.-1), gene.vars["tally_binsize"]), UnitRange(0,size(gene.tally_matrix,1)-1))
-        gene.tally_matrix[:,1+gene.history[:tally]] .= counts([div(floor(Int, posn-1), gene.vars["tally_binsize"]) for (i,posn) in enumerate gene.pol_position if gene.pol_state=="active"], UnitRange(0,size(gene.tally_matrix,1)-1))
+        gene.tally_matrix[:,1+gene.history[:tally]] .= counts([div(floor(Int, posn-1), gene.vars["tally_binsize"]) for (i,posn) in enumerate(gene.pol_position) if gene.pol_state=="active"], UnitRange(0,size(gene.tally_matrix,1)-1))
     end
     return(nothing)
 end
