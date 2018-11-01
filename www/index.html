@@ -407,7 +407,7 @@
 	 if (typeof anim !== "undefined") {
 	     anim_data=anim;
 	     if (anim.hasOwnProperty('cartoons')) {
-		 load_cartoon(anim.cartoons[0]);
+		 load_cartoon(anim.cartoons[anim_data["scenarios"][0].name.Value]);
 	     } else {
 		 d3.json("test.json").then(load_cartoon);
 	     }
