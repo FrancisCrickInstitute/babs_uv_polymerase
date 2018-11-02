@@ -42,8 +42,8 @@ function find_chain(gene::Gene, ind::Int64, chaintype::String)
     end
     i=ind
     while (i<length(gene.pol_position)) &&
-#        (gene.pol_position[i]-gene.pol_position[i+1] < gene.vars["pol_size"] + gene.vars["zero"]) &&
-        (gene.pol_position[i]-gene.pol_position[i+1] <= gene.vars["pol_size"]) &&
+        (gene.pol_position[i]-gene.pol_position[i+1] < gene.vars["pol_size"] + gene.vars["zero"]) &&
+#        (gene.pol_position[i]-gene.pol_position[i+1] <= gene.vars["pol_size"]) &&
         (gene.pol_state[i+1]==chaintype)
         i += 1
     end
