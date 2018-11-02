@@ -194,7 +194,7 @@
 		.data(data);
 	 line.enter().append("line")
 	     .attr("stroke","black")
-	     .attr("y1", 300).attr("y2", 300+radius)
+	     .attr("y1", 380).attr("y2", 380+radius)
 	   .merge(line)
 	     .attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
 	     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
@@ -481,7 +481,7 @@
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;}
-	     }, 200);
+	     }, 400);
      };
     </script>
   </body>
