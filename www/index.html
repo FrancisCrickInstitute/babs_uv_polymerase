@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -221,12 +220,12 @@
 			.enter().filter(d => d.value.Unit!="NA")
 			.append('div').attr("class", "row");
 	 rows.append('label')
-	     .attr("class", "col-xl-4 col-form-label")
+	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
 	     .text(d => d.key);
 	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
-	     .attr("class", "form-control col-xl-4")
+	     .attr("class", "form-control col-4")
 	     .attr("value", d=>d.value.Value)
 	     .on("input", function(d,i){d.value.Value=+this.value;});
 	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
@@ -302,16 +301,16 @@
 	     .append("div").attr("class", "row");
 	 head
 	     .append("input").attr("type", "text")
-	     .attr("class", "form-control-plaintext col-xl-9 form-title")
+	     .attr("class", "form-control-plaintext col-9 form-title")
 	     .style("color", "white")
 	     .on("input", function(d){d.name.Value=this.value;});
 	 head
 	     .append("input").attr("type", "color")
-	     .attr("class", "col-xl-2 picker")
+	     .attr("class", "col-2 picker")
 	     .on("input", function(d,i){d.colour.Value=this.value; show_movies();});
 	 head
 	     .append("span")
-	     .attr("class", "form-control-plaintext col-xl-1")
+	     .attr("class", "form-control-plaintext col-1")
 	     .attr("style","cursor:not-allowed")
 	     .html("&times;")
 	     .on("click", remove_card);
