@@ -46,7 +46,7 @@
 	<div id="main" class="tab-pane active show" role="tabpanel">
 	  <div class="row">
 	    <div class="col-7">
-	      <select class="form-control" id="cartoon_selector"></select>
+	      <select class="form-control" id="cartoon_selector"><option value="Example">Example Cartoon</option></select>
 	      <svg width="758" height="400" id="cartoon"></svg>
 	      <svg width="600" height="400" id="movie"></svg>
 	      <div class="form-group">
@@ -407,6 +407,7 @@
      function load_cartoon(d) {
 	 cartoon_ind=1;
 	 cartoon_data=d;
+	 cartoon.selectAll("circle").data([]).exit().remove();
 	 show_damage(d.damage);
 	 show_repair(d.repair);
 	 update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id));
@@ -438,7 +439,7 @@
 	 if (typeof anim !== "undefined") {
 	     anim_data=anim;
 	     if (anim.hasOwnProperty('cartoons')) {
-		 var opts = d3.select("#cartoon_selector").selectAll("option").data(keys(anim.cartoons));
+		 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
 		 opts.exit().remove();
 		 opts.enter().append("option")
 		 .merge(opts)
