@@ -46,10 +46,10 @@
       <div class="tab-content">
 	<div id="main" class="tab-pane active show" role="tabpanel">
 	  <div class="row">
-	    <div class="col-7">
+	    <div class="col-xl-7">
 	      <select class="form-control" id="cartoon_selector"><option value="Example">Example Cartoon</option></select>
 	      <svg width="758" height="400" id="cartoon"></svg>
-	      <svg width="600" height="400" id="movie"></svg>
+	      <svg width="500" height="400" id="movie"></svg>
 	      <div class="form-group">
 		<input type="range" class="form-control-range" id="time_slider" onchange="set_time(this.value)">
 		<p id="timer"></p>
@@ -61,7 +61,7 @@
 		<tbody id="repair"></tbody>
 	      </table>
 	    </div>
-	    <div class="col">
+	    <div class="col-xl-5">
 	      <form id="params_form"></form>
 	      <!-- <table class="table table-sm">
 		   <thead>
@@ -110,7 +110,7 @@
      var movie_timer;
      var cartoon_timer;
      var margin = {top: 20, right: 10, bottom: 20, left: 10};
-     var width = 600 - margin.left - margin.right,
+     var width = 500 - margin.left - margin.right,
 	 height = 400 - margin.top - margin.bottom;
      var xscale = d3.scaleLinear().range([0, width]);
      var yscale = d3.scaleLinear().range([height, 0]); 
@@ -221,12 +221,12 @@
 			.enter().filter(d => d.value.Unit!="NA")
 			.append('div').attr("class", "row");
 	 rows.append('label')
-	     .attr("class", "col-sm-4 col-form-label")
+	     .attr("class", "col-xl-4 col-form-label")
 	     .style("text-align","right")
 	     .text(d => d.key);
 	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
-	     .attr("class", "form-control col-sm-4")
+	     .attr("class", "form-control col-xl-4")
 	     .attr("value", d=>d.value.Value)
 	     .on("input", function(d,i){d.value.Value=+this.value;});
 	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
@@ -302,16 +302,16 @@
 	     .append("div").attr("class", "row");
 	 head
 	     .append("input").attr("type", "text")
-	     .attr("class", "form-control-plaintext col-sm-9 form-title")
+	     .attr("class", "form-control-plaintext col-xl-9 form-title")
 	     .style("color", "white")
 	     .on("input", function(d){d.name.Value=this.value;});
 	 head
 	     .append("input").attr("type", "color")
-	     .attr("class", "col-sm-2 picker")
+	     .attr("class", "col-xl-2 picker")
 	     .on("input", function(d,i){d.colour.Value=this.value; show_movies();});
 	 head
 	     .append("span")
-	     .attr("class", "form-control-plaintext col-sm-1")
+	     .attr("class", "form-control-plaintext col-xl-1")
 	     .attr("style","cursor:not-allowed")
 	     .html("&times;")
 	     .on("click", remove_card);
@@ -391,7 +391,7 @@
 						  {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
 	   var card = d3.select("#scene-cards").selectAll("div.card-wrap")
 			.data(anim_data.scenarios);
-	   card.enter().append("div").attr("class","col-sm-6 card-wrap")
+	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
 	       .call(build_new_card)
 	       .call(update_card, [[0]], anim_data.genes);
        });
@@ -401,7 +401,7 @@
 					      {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
 	   var card = d3.select("#gene-cards").selectAll("div.card-wrap")
 			.data(anim_data.genes);
-	   card.enter().append("div").attr("class","col-sm-6 card-wrap")
+	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
 	       .call(build_new_card)
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
@@ -463,7 +463,7 @@
 	 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
 		       .data(anim_data.scenarios, d => d.name.Value);
 	 cards.exit().remove();
-	 cards.enter().append("div").attr("class","col-sm-6 card-wrap")
+	 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
 	      .call(build_new_card)
 	      .merge(cards)
 	      .call(update_card, anim_data.data, anim_data.genes);
@@ -472,7 +472,7 @@
 	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
 		   .data(anim_data.genes, d => d.name.Value);
 	 cards.exit().remove();
-	 cards.enter().append("div").attr("class","col-sm-6 card-wrap")
+	 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
 	      .call(build_new_card)
 	      .merge(cards)
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
