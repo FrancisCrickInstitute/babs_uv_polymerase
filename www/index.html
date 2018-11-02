@@ -218,7 +218,7 @@
 	     .attr("class", "col-sm-4 col-form-label")
 	     .style("text-align","right")
 	     .text(d => d.key);
-	 rows.filter(d => d.Unit.includes("|")).each(add_radio);
+	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
 	 rows.append("input")
 	     .attr("class", "form-control col-sm-4")
 	     .attr("value", d=>d.value.Value)
