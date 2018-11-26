@@ -86,6 +86,7 @@
 	<div id="recalculate"  class="tab-pane" role="tabpanel">
 	  <p id="json_contents"></p>
 	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
+	  <a id="download_csv">Download polymerase stats</a>
 	</div>
 	<div id="progress"></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
@@ -108,7 +109,7 @@
      var movie_ind=0;
      var movie_timer;
      var cartoon_timer;
-     var margin = {top: 20, right: 10, bottom: 20, left: 10};
+     var margin = {top: 20, right: 10, bottom: 20, left: 20};
      var width = 500 - margin.left - margin.right,
 	 height = 400 - margin.top - margin.bottom;
      var xscale = d3.scaleLinear().range([0, width]);
@@ -119,6 +120,29 @@
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
+
+     function label(k) {
+	 var UI_names = {gene_length:"Gene Length",
+		initiation_period:"Init. Period",
+		uv_distance:"UV dist.",
+		run_length:"Run time",
+		pol_speed:"Speed of pols",
+		pol_size:"Size of pols",
+		repair_half_life:"Repair T½",
+		processivity:"Processivity T½",
+		removal:"Degradation  T½",
+		pause_site:"Pause location",
+		release_time:"Pause dwell time",
+		complete_reuse_p:"P(Reuse on completion)", 
+		dropoff_reuse_p:"P(Reuse on degradation)", 
+		genome_prop:"Proportion in genome",
+	 }
+	 if (UI_names.hasOwnProperty(k)) {
+	     return (UI_names);
+	 } else {
+	     return (k);
+	 }
+     }
      
      function pos_to_xy(pos) {
 	 diam=2*radius;
@@ -222,7 +246,7 @@
 	 rows.append('label')
 	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
-	     .text(d => d.key);
+	     .text(label);
 	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
@@ -275,7 +299,7 @@
 	   .data(data)
 	   .enter().append("a")
 	   .attr("class","dropdown-item "+cl)
-	   .text(d => d.key)
+	   .text(label)
 	   .on("click", add_field);
      }
      function add_field(d) {
@@ -325,8 +349,9 @@
 	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 	 card.selectAll("svg > g")
 	     .append("g")
-	     .attr("transform", "translate(0," + height + ")")
-	     .call(d3.axisBottom(xscale));
+	     .attr("transform", "translate(" + width + "," + height + ")")
+	     .call(d3.axisBottom(xscale))
+	     .call(d3.axisBottom(yscale));
 	 card.selectAll("svg > g")
 	     .append("text").attr("x",width*.8).attr("y", height*.2)
 	     .attr("class","movie_timer")
@@ -434,10 +459,35 @@
 	     .merge(all_tracks)
 	     .attr("d", d => valueline(d[1]));
      }
+     function exportCSV(hist) {
+	 var str = '';
+	 for (cell in hist) {
+	     for (scenario in hist[cell]) {
+		 for (ev in hist[cell][scenario]) {
+		     str += `${cell},${scenario},${ev},${hist[cell][scenario][ev]}`;
+		 }
+	     }
+	 }
+	 var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+	 if (navigator.msSaveBlob) { // IE 10+
+	     navigator.msSaveBlob(blob, exportedFilenmae);
+	 } else {
+	     var link = document.getElementById('download_csv');
+             if (link.download !== undefined) { // feature detection
+		 // Browsers that support HTML5 download attribute
+		 var url = URL.createObjectURL(blob);
+		 link.setAttribute("href", url);
+		 link.setAttribute("download", "uv_damage.csv");
+	     }
+	 }
+     }
      d3.json("anim_file.json").then(show_movies);
      function show_movies(anim) {
 	 if (typeof anim !== "undefined") {
 	     anim_data=anim;
+	     if (anim.hasOwnProperty('history')) {
+		 exportCSV(anim.history);
+	     }
 	     if (anim.hasOwnProperty('cartoons')) {
 		 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
 		 opts.exit().remove();

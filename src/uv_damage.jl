@@ -136,6 +136,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
     path_data=IOBuffer()
     write(path_data,"{\"data\": [")
     cartoon = Dict{String, String}()
+    history = Dict()
     for scenario in scenarios
         myvars = merge(vars, scenario)
         ss_total=Array{Array{Int64,2}}(undef, length(cell))
@@ -166,7 +167,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
                 end
             end
         end
-        ch=[Dict(k1 => v1/n_iter for (k1, v1) in v) for v in ch]
+        history[scenario["name"]] = Dict(cell[k]["name"] => Dict(k1 => v1/n_iter for (k1, v1) in v) for (k,v) in ch)
         my_gene_vars = Dict(g => merge(myvars, cell[g]) for g in keys(cell))
         JSON.print(path_data, gene_total)
         if scenario!=scenarios[lastindex(scenarios)]
@@ -184,6 +185,8 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
     JSON.print(path_data, Dict(v => Dict("Value"=>vars[v], "Unit"=>var_units[v]) for v in keys(vars)))
     write(path_data, ",\n \"cartoons\": ")
     JSON.print(path_data, Dict(v => JSON.parse(cartoon[v]) for v in keys(cartoon)))
+    write(path_data, ",\n \"history\": ")
+    JSON.print(path_data, history)
     write(path_data,"}\n")
     return String(take!(path_data))
 end
