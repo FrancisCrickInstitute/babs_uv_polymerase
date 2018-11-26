@@ -138,7 +138,7 @@
 		genome_prop:"Proportion in genome",
 	 }
 	 if (UI_names.hasOwnProperty(k.key)) {
-	     return (UI_names);
+	     return (UI_names[k.key]);
 	 } else {
 	     return (k.key);
 	 }
@@ -347,13 +347,13 @@
 	     .append("g")
 	     .attr("class","track-group")
 	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-	 card.selectAll("svg > g")
-	     .append("g")
-	     .attr("transform", "translate(" + width + "," + height + ")")
-	     .call(d3.axisBottom(xscale))
+	 card.append("g")
+	     .attr("transform", "translate(0," + height + ")")
+	     .call(d3.axisBottom(xscale));
+	 card.append("g")
+	     .attr("transform", "translate(0," + height + ")")
 	     .call(d3.axisLeft(yscale));
-	 card.selectAll("svg > g")
-	     .append("text").attr("x",width*.8).attr("y", height*.2)
+	 card.append("text").attr("x",width*.8).attr("y", height*.2)
 	     .attr("class","movie_timer")
 	     .text("0");
      }
