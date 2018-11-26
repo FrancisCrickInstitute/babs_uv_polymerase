@@ -137,10 +137,10 @@
 		dropoff_reuse_p:"P(Reuse on degradation)", 
 		genome_prop:"Proportion in genome",
 	 }
-	 if (UI_names.hasOwnProperty(k)) {
+	 if (UI_names.hasOwnProperty(k.key)) {
 	     return (UI_names);
 	 } else {
-	     return (k);
+	     return (k.key);
 	 }
      }
      
@@ -351,7 +351,7 @@
 	     .append("g")
 	     .attr("transform", "translate(" + width + "," + height + ")")
 	     .call(d3.axisBottom(xscale))
-	     .call(d3.axisBottom(yscale));
+	     .call(d3.axisLeft(yscale));
 	 card.selectAll("svg > g")
 	     .append("text").attr("x",width*.8).attr("y", height*.2)
 	     .attr("class","movie_timer")
