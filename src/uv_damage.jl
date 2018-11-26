@@ -167,7 +167,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
                 end
             end
         end
-        history[scenario["name"]] = Dict(cell[k]["name"] => Dict(k1 => v1/n_iter for (k1, v1) in v) for (k,v) in ch)
+        history[scenario["name"]] = Dict(cell[k]["name"] => Dict(k1 => v1/n_iter for (k1, v1) in ch[k]) for k in keys(ch))
         my_gene_vars = Dict(g => merge(myvars, cell[g]) for g in keys(cell))
         JSON.print(path_data, gene_total)
         if scenario!=scenarios[lastindex(scenarios)]
