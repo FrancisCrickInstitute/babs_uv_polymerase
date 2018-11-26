@@ -109,7 +109,7 @@
      var movie_ind=0;
      var movie_timer;
      var cartoon_timer;
-     var margin = {top: 20, right: 10, bottom: 20, left: 20};
+     var margin = {top: 20, right: 10, bottom: 20, left: 30};
      var width = 500 - margin.left - margin.right,
 	 height = 400 - margin.top - margin.bottom;
      var xscale = d3.scaleLinear().range([0, width]);
@@ -123,19 +123,23 @@
 
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
-		initiation_period:"Init. Period",
-		uv_distance:"UV dist.",
-		run_length:"Run time",
-		pol_speed:"Speed of pols",
-		pol_size:"Size of pols",
-		repair_half_life:"Repair T½",
-		processivity:"Processivity T½",
-		removal:"Degradation  T½",
-		pause_site:"Pause location",
-		release_time:"Pause dwell time",
-		complete_reuse_p:"P(Reuse on completion)", 
-		dropoff_reuse_p:"P(Reuse on degradation)", 
-		genome_prop:"Proportion in genome",
+			 initiation_period:"Init. Period",
+			 uv_distance:"UV dist.",
+			 run_length:"Run time",
+			 pol_speed:"Speed of pols",
+			 pol_size:"Size of pols",
+			 repair_half_life:"Repair T½",
+			 processivity:"Processivity T½",
+			 removal:"Degradation  T½",
+			 pause_site:"Pause location",
+			 release_time:"Pause dwell time",
+			 complete_reuse_p:"P(Reuse on completion)", 
+			 dropoff_reuse_p:"P(Reuse on degradation)", 
+			 genome_prop:"Proportion in genome",
+			 pol_N:"Polymerase count",
+			 speed_factor_t0:"Speed factor",
+			 tally_binsize:"Bin Width",
+			 tally_interval:"Sampling interval"
 	 }
 	 if (UI_names.hasOwnProperty(k.key)) {
 	     return (UI_names[k.key]);
@@ -347,11 +351,10 @@
 	     .append("g")
 	     .attr("class","track-group")
 	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-	 card.append("g")
+	 card.select(".track-group").append("g")
 	     .attr("transform", "translate(0," + height + ")")
 	     .call(d3.axisBottom(xscale));
-	 card.append("g")
-	     .attr("transform", "translate(0," + height + ")")
+	 card.select(".track-group").append("g")
 	     .call(d3.axisLeft(yscale));
 	 card.append("text").attr("x",width*.8).attr("y", height*.2)
 	     .attr("class","movie_timer")
