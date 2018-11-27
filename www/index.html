@@ -103,6 +103,7 @@
      Pages.start(window.location.href);
      var cartoon = d3.select("#cartoon"),
 	 cartoon_width = +cartoon.attr("width");
+     var n_iter=100;
      var radius=4;
      var cartoon_data;
      var cartoon_ind=0;
@@ -116,7 +117,7 @@
      var yscale = d3.scaleLinear().range([height, 0]); 
      var valueline = d3.line()
 		       .x((d,i) => xscale(i))
-		       .y(d => yscale(d))
+		       .y(d => yscale(d/n_iter))
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
@@ -567,7 +568,7 @@
 	 var maxy=anim_data.data.map(z => z.map(y => y.map(x => x.reduce(maxer)).reduce(maxer)).reduce(maxer)).reduce(maxer);
 	 var maxx = anim_data.data.map(y => y.map(x => x[1].length).reduce(maxer)).reduce(maxer)
 	 xscale.domain([0, maxx]);
-	 yscale.domain([0, maxy]);
+	 yscale.domain([0, maxy/n_iter]);
 	 var maxti = anim_data.data[0][0].length;
 	 tscale = anim_data.default.tally_interval.Value;
 	 // Scenario cards

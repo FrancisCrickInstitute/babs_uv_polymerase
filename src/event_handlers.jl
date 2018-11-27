@@ -113,7 +113,7 @@ function tally(gene::Gene, event::indexed_event, elapsed::Float64)
         bin = div.(floor.(Int, gene.pol_position.-1), gene.vars["tally_binsize"])
     end
     if (length(bin)!=0)
-        gene.tally_matrix[:,1+gene.history[:tally]] .= counts(bin, UnitRange(0,size(gene.tally_matrix,1)-1)) ./ (1000/gene.vars["tally_binsize"])
+        gene.tally_matrix[:,1+gene.history[:tally]] .= counts(bin, UnitRange(0,size(gene.tally_matrix,1)-1))
     end
     return(nothing)
 end
