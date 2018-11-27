@@ -155,11 +155,11 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
             end
             for gene_instance in keys(genes)
                 if (i==1)
-                    gene_total[gene_instance] =  genes[gene_instance].tally_matrix
+                    gene_total[gene_instance] =  genes[gene_instance].tally_matrix ./ n_iter
                     ss_total[gene_instance] =  ss[gene_instance].tally_matrix
                     ch[gene_instance]=genes[gene_instance].history
                 else
-                    gene_total[gene_instance] .= gene_total[gene_instance] .+ genes[gene_instance].tally_matrix
+                    gene_total[gene_instance] .= gene_total[gene_instance] .+ genes[gene_instance].tally_matrix ./ n_iter
                     ss_total[gene_instance] .= ss_total[gene_instance] .+ ss[gene_instance].tally_matrix
                     for (k,v) in genes[gene_instance].history
                         ch[gene_instance][k] += v
