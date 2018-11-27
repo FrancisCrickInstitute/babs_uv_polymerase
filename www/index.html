@@ -86,7 +86,7 @@
 	<div id="recalculate"  class="tab-pane" role="tabpanel">
 	  <p id="json_contents"></p>
 	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
-	  <a id="download_csv">Download polymerase stats</a>
+	  <a id="download_csv" style="display:none" >Download polymerase stats</a>
 	</div>
 	<div id="progress"></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
@@ -143,6 +143,33 @@
 	 }
 	 if (UI_names.hasOwnProperty(k.key)) {
 	     return (UI_names[k.key]);
+	 } else {
+	     return (k.key);
+	 }
+     }
+     function tooltip(k) {
+	 var UI_tips = {gene_length:"Length of gene from start to completion in bases",
+			initiation_period:"Expected time between consecutive initiation attempts",
+			uv_distance:"Expected distance between UV damage sites, leave blank for no damage",
+			run_length:"How long after damage to monitor polymerase positions",
+			pol_speed:"Speed of freely moving polymerases",
+			pol_size:"Number of bases a polymerase occupies",
+			repair_half_life:"The amount of time we'd expect for half the damage sites to be repaired",
+			processivity:"Amount of time since initiation, at which point a polymerase has 50% change of disassiciating from gene",
+			removal:"Cummulative amount of time a polymerase has spent stalled, at which point it has a 50% change of disassociated from gene",
+			pause_site:"Number of bases from TSS where polymerases will pause",
+			release_time:"Length of time paused polymerases will be stalled for",
+			complete_reuse_p:"If a polymerase achieves full length transcription, the probability that it will be made available for initiation again", 
+			dropoff_reuse_p:"If a polymerase is prematurely removed, the probability that it will be made available for initiation again", 
+			genome_prop:"What proportion of genes in the genome are represented by this set of parameters",
+			pol_N:"Number of polymerases available per gene for initiation immediately prior to UV damage",
+			speed_factor_t0:"By what factor do polymerase speeds change immediately upon damage",
+			tally_binsize:"Size of bins in which to chop gene for purposes of counting polymerases",
+			tally_interval:"Time between counting of polymerases across gene length",
+			Type:"Whether we count all polymerases, or just moving ones"
+	 }
+	 if (UI_tips.hasOwnProperty(k.key)) {
+	     return (UI_tips[k.key]);
 	 } else {
 	     return (k.key);
 	 }
@@ -250,7 +277,8 @@
 	 rows.append('label')
 	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
-	     .text(label);
+	     .text(label)
+	     .attr("title",tooltip);
 	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
@@ -462,14 +490,44 @@
 	     .merge(all_tracks)
 	     .attr("d", d => valueline(d[1]));
      }
-     function exportCSV(hist) {
+     function param_format(p, obj) {
+	 str="";
+	 var val;
+	 if (obj[p].Unit!="NA") {
+	     val = (obj[p].Value===null) ? "Inf " : obj[p].Value;
+	     val +=  obj[p].Unit;
+	     val = (obj[p].Unit.includes("|")) ? obj[p].Unit.split("|")[obj[p].Value] : val;
+	     str=label({key:p}) + "," +  val  + "\n";
+	 }
+	 return(str);
+     }
+     function exportCSV(p) {
+	 hist=p.history;
 	 var str = '';
 	 for (cell in hist) {
 	     for (scenario in hist[cell]) {
 		 for (ev in hist[cell][scenario]) {
-		     str += `${cell},${scenario},${ev},${hist[cell][scenario][ev]}`;
+		     str += `${cell},${scenario},${ev},${hist[cell][scenario][ev]}\n`;
 		 }
 	     }
+	 }
+	 str += `\nSCENARIOS\n`;
+	 p.scenarios.forEach(function(scen){
+	     str += `${scen.name.Value}\n`;
+	     for (param in scen) {
+		 str += param_format(param, scen);
+	     }
+	 });
+	 str += `\nGENES\n`;
+	 p.genes.forEach(function(gene){
+	     str += `${gene.name.Value}\n`;
+	     for (param in gene) {
+		 str += param_format(param, gene);
+	     }
+	 });
+	 str += `\nGLOBAL\n`;
+	 for (param in p.default) {
+	     str += param_format(param, p.default);
 	 }
 	 var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
 	 if (navigator.msSaveBlob) { // IE 10+
@@ -481,6 +539,7 @@
 		 var url = URL.createObjectURL(blob);
 		 link.setAttribute("href", url);
 		 link.setAttribute("download", "uv_damage.csv");
+		 link.style.display = "block";
 	     }
 	 }
      }
@@ -489,7 +548,7 @@
 	 if (typeof anim !== "undefined") {
 	     anim_data=anim;
 	     if (anim.hasOwnProperty('history')) {
-		 exportCSV(anim.history);
+		 exportCSV(anim);
 	     }
 	     if (anim.hasOwnProperty('cartoons')) {
 		 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
