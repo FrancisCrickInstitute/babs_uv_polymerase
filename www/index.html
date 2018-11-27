@@ -329,7 +329,7 @@
 	 var d2=d1.append("div")
 		  .attr("class","dropdown-menu");
 	 d2.selectAll("a")
-	   .data(data)
+	   .data(data.filter(d => d.value.Unit != "NA"))
 	   .enter().append("a")
 	   .attr("class","dropdown-item "+cl)
 	   .text(label)
