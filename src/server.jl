@@ -1,4 +1,8 @@
-function start_server() 
+function start_server()
+    open(joinpath(@__DIR__, "../www/anim_file.json"), "w") do f
+        anim = main();
+        write(f, anim)
+    end
     Endpoint("/uv_damage") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/index.html"),String)
     end
