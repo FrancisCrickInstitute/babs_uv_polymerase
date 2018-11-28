@@ -9,7 +9,7 @@ using Random
 using JSON
 using Pages#master
 using HTTP
-using GZip
+
 
 include("cell_settings.jl")
 include("types.jl")

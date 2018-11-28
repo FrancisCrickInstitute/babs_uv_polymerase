@@ -1,5 +1,5 @@
 function start_server()
-    GZip.open(joinpath(@__DIR__, "../www/anim_file.json.gz"), "w") do f
+    open(joinpath(@__DIR__, "../www/anim_file.json"), "w") do f
         anim = main();
         write(f, anim)
     end
@@ -7,7 +7,7 @@ function start_server()
         read(joinpath(@__DIR__, "../www/index.html"),String)
     end
     Endpoint("anim_file.json") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/anim_file.json.gz"),String)
+        read(joinpath(@__DIR__, "../www/anim_file.json"),String)
     end
     Endpoint("test.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/test.json"),String)
