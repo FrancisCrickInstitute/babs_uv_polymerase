@@ -9,6 +9,9 @@ function start_server()
     Endpoint("anim_file.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/anim_file.json"),String)
     end
+    Endpoint("pages.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/pages.js"),String)
+    end
     Endpoint("test.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/test.json"),String)
     end
