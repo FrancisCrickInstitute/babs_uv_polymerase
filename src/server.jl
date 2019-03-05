@@ -6,16 +6,13 @@ function start_server()
     Endpoint("/uv_damage") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/index.html"),String)
     end
-    Endpoint("anim_file.json") do request::HTTP.Request
+    Endpoint("/anim_file.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/anim_file.json"),String)
     end
-    Endpoint("pages.js") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/pages.js"),String)
-    end
-    Endpoint("test.json") do request::HTTP.Request
+    Endpoint("/test.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/test.json"),String)
     end
-    Endpoint("recalculate.json", POST) do request::HTTP.Request
+    Endpoint("/recalculate.json", POST) do request::HTTP.Request
         response = main(String(request.body))
     end
     Pages.start();
