@@ -146,9 +146,9 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
         for i=1:n_iter
             print(scenario["name"], "_", task_id, "_", i, "\n")
 	    scen = scenario["name"]
-            if client_id!=""
-	        Pages.message("/uv_damage", client_id, "script", "progress(\"$scen\",\"$i\")")
-            end
+            # if client_id!=""
+	    #     Pages.message("/uv_damage", client_id, "script", "progress(\"$scen\",\"$i\")")
+            # end
             Random.seed!(i - 1 + task_id*n_iter);
             (genes,ss,cartoon_data)=simulate(myvars, cell, record=i==1);
             if (i==1)
