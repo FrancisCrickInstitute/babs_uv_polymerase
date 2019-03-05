@@ -15,7 +15,7 @@ function start_server()
     Endpoint("test.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/test.json"),String)
     end
-    Post("recalculate.json") do request::HTTP.Request
+    Endpoint("recalculate.json", POST) do request::HTTP.Request
         response = main(String(request.body))
     end
     Pages.start();
