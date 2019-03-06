@@ -139,6 +139,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
     cartoon = Dict{String, String}()
     history = Dict()
     for scenario in scenarios
+        print(scenario)
         myvars = merge(vars, scenario)
         ss_total=Array{Array{Int64,2}}(undef, length(cell))
         gene_total=Array{Array{Int64,2}}(undef, length(cell))

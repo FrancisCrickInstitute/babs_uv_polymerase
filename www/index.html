@@ -122,7 +122,10 @@
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
-
+     var canvas4webm = document.createElement("canvas");
+     canvas4webm.width = width + margin.left + margin.right;
+     canvas4webm.height = height + margin.top + margin.bottom;
+     var context4webm = canvas.getContext("2d");
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
 			 initiation_period:"Init. Period",
@@ -231,11 +234,27 @@
 	 d3.select("#scenarios").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
 	   .attr("d",d => valueline(d[ti]));
+	 d3.select("#scenarios").selectAll("svg")
+	   .each(recordFrame);
 	 d3.select("#genes").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
 	   .attr("d", d => valueline(d[ti]));
 	 d3.selectAll('.movie_timer').text(format_hms(ti*tscale));
      }
+     var q = d3.queue(1);
+     function record_frame(d,i) {
+	 q.defer(drawFrame, this);
+     }
+     
+     function drawFrame(svg, cb) {
+	 var img = new Image(),
+             serialized = new XMLSerializer().serializeToString(svg),
+             url = URL.createObjectURL(new Blob([serialized], {type: "image/svg+xml"}));
+	 img.onload = function(){
+	     cb(null, img); //signals to queuer that 'img' is to be pushed onto queue
+	 };
+	 img.src = url;
+     }	 
      
      function show_damage(data) {
 	 var rect=cartoon.selectAll("rect")
@@ -243,15 +262,15 @@
 	 rect.enter().append("rect")
      	     .attr("class", "active_damage")
 	     .attr("width", radius).attr("height", 2*radius)
-	   .merge(rect)
+	     .merge(rect)
 	     .attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
 	 rect.exit().remove();
 	 var line=cartoon.selectAll("line")
-		.data(data);
+			 .data(data);
 	 line.enter().append("line")
 	     .attr("stroke","black")
 	     .attr("y1", 380).attr("y2", 380+radius)
-	   .merge(line)
+	     .merge(line)
 	     .attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
 	     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
 	 line.exit().remove();
@@ -270,7 +289,7 @@
 	  .attr("value",(d,i) => i);
 	 b.append("span").text(I);
 	 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;})
-	 }
+     }
      function show_form(node, data) {
 	 var rows = node.selectAll('div')
 			.data(data, d => d.key)
@@ -298,9 +317,9 @@
 	     headers: {"Content-type": "application/json; charset=UTF-8"}
 	 }).then(show_movies);
      }
-      function progress(task, n) {
-	  d3.select("#progress").text(task + ": " +  n + "/100");
-      }
+     function progress(task, n) {
+	 d3.select("#progress").text(task + ": " +  n + "/100");
+     }
      function show_repair(data) {
 	 var rows = d3.select("#repair").selectAll('tr')
 		      .data(data);
@@ -309,19 +328,19 @@
 			    .append('tr')
 			    .merge(rows);
 	 all_rows.filter(d => d>cartoon_data.params.run_length)
-		      .attr("class", "text-muted");
+		 .attr("class", "text-muted");
 	 var filled_rows = all_rows.selectAll('td')
 				   .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}]);
 	 filled_rows
 	     .enter().append('td')
-	   .merge(filled_rows)
+	     .merge(filled_rows)
 	     .text(d => d.val)
 	     .attr("onclick", function(d,i) {return (i==1)?"set_time(" + (d.raw-15) + ")":"highlight_site(" + (d.raw) +")"});
      }
 
      function build_dropdown(node, data, cl) {
 	 var d1=node.selectAll("div.dropdown").data([1])
-		  .enter().append("div").attr("class","dropdown")
+		    .enter().append("div").attr("class","dropdown")
 	 d1.append("button")
 		    .attr("class","btn btn-secondary dropdown-toggle")
 		    .attr("type","button")
@@ -413,8 +432,8 @@
 	 paths.exit().remove();
 	 paths.enter().append("path")
 	      .attr("class","pol_path")
-	 .merge(paths)
-	     .attr("stroke", (d,i) => annot_within[i].colour.Value)
+	      .merge(paths)
+	      .attr("stroke", (d,i) => annot_within[i].colour.Value)
 	      .attr("d", (d,i) => valueline(d[0]));
      }
 
@@ -433,19 +452,19 @@
 	   .transition().attr("height", radius*4).attr("width", radius*2)
 	   .transition().attr("height", radius*2).attr("width", radius);
      }
-      function clone_card(obj, add) {
-	  copy = {};
-	  for (var attr in obj) {
-              if (obj.hasOwnProperty(attr)) copy[attr] = {Value:obj[attr].Value, Unit:obj[attr].Unit};
-          }
-	  return Object.assign(copy, add);
-      }
+     function clone_card(obj, add) {
+	 copy = {};
+	 for (var attr in obj) {
+             if (obj.hasOwnProperty(attr)) copy[attr] = {Value:obj[attr].Value, Unit:obj[attr].Unit};
+         }
+	 return Object.assign(copy, add);
+     }
 
      d3.select('#add-scene')
-    .on('click', function(d, i) {
-	copy = {};
+       .on('click', function(d, i) {
+	   copy = {};
 	   anim_data.scenarios.push(clone_card(anim_data.scenarios[0],
-						  {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+					       {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
 	   var card = d3.select("#scene-cards").selectAll("div.card-wrap")
 			.data(anim_data.scenarios);
 	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
@@ -455,7 +474,7 @@
      d3.select('#add-gene')
        .on('click', function(d, i) {	
 	   anim_data.genes.push(clone_card(anim_data.genes[0],
-					      {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+					   {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
 	   var card = d3.select("#gene-cards").selectAll("div.card-wrap")
 			.data(anim_data.genes);
 	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
@@ -545,6 +564,22 @@
 	     }
 	 }
      }
+     var webm = [],
+	 stream = canvas4.captureStream(),
+	 recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+     recorder.ondataavailable = function(event) {
+	 if (event.data && event.data.size) {
+	     webm.push(event.data);
+	 }
+     };
+     recorder.onstop = () => {
+	 var url = URL.createObjectURL(new Blob(webm, { type: "video/webm" }));
+	 d3.select("body")
+	   .append("video")
+	   .attr("src", url)
+	   .attr("controls", true)
+	   .attr("autoplay", true);
+     };
      d3.json("anim_file.json").then(show_movies);
      function show_movies(anim) {
 	 if (typeof anim !== "undefined") {
@@ -556,8 +591,8 @@
 		 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
 		 opts.exit().remove();
 		 opts.enter().append("option")
-		 .merge(opts)
-		 .attr("value", I).text(I);
+		     .merge(opts)
+		     .attr("value", I).text(I);
 		 d3.select("#cartoon_selector").on("change", function(d) {load_cartoon(anim.cartoons[this.value]);});
 		 load_cartoon(anim.cartoons[anim_data["scenarios"][0].name.Value]);
 	     } else {
@@ -571,6 +606,8 @@
 	 xscale.domain([0, maxx]);
 	 yscale.domain([0, maxy/n_iter]);
 	 var maxti = anim_data.data[0][0].length;
+	 var is_capturing = true,
+	     movie_ind=0;
 	 tscale = anim_data.default.tally_interval.Value;
 	 // Scenario cards
 	 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
@@ -593,8 +630,24 @@
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
-		 movie_ind = (movie_ind+1) % maxti;}
-	     }, 400);
+		 movie_ind = (movie_ind+1) % maxti;
+		 if (is_capturing && (movie_ind!=0)) {
+		     queue.awaitAll(function(err, frames){
+			 recorder.start();
+			 drawFrame();
+			 function drawFrame() {
+			     if (frames.length) {
+				 context4webm.drawImage(frames.shift(), 0, 0, width, height);
+				 requestAnimationFrame(drawFrame);
+			     } else {
+				 recorder.stop();
+			     }
+			 }
+		     });
+		     is_capturing=false;
+		 }
+	     }
+	 }, 400);
      };
     </script>
   </body>
