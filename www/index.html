@@ -124,10 +124,7 @@
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
-     var canvas4webm = document.createElement("canvas");
-     canvas4webm.width = width + margin.left + margin.right;
-     canvas4webm.height = height + margin.top + margin.bottom;
-     var context4webm = canvas4webm.getContext("2d");
+     var canvas4webm, context4webm;
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
 			 initiation_period:"Init. Period",
@@ -288,8 +285,7 @@
 	 }
 	 
      }
-     var webm, webms,
-	 stream = canvas4webm.captureStream();
+     var webm, webms,streams;
      
      function show_damage(data) {
 	 var rect=cartoon.selectAll("rect")
@@ -645,54 +641,62 @@
 	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
 	 queues=anim_data.scenarios.map(scen => d3.queue(1));
 	 webms=anim_data.scenarios.map(scen => []);
-	 // Gene Cards
-	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
-		   .data(anim_data.genes, d => d.name.Value);
-	 cards.exit().remove();
-	 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
-	      .call(build_new_card)
-	      .merge(cards)
-	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
-	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
-	 movie_timer=d3.interval(function() {
-	     if (d3.select("#pauser").property("checked")) {
-		 update_movies(movie_ind);
-		 movie_ind = (movie_ind+1) % maxti;
-		 if (is_capturing && (movie_ind==0)) {
-		     queues.forEach(function(queue, which_queue) {
-			 var recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-			 recorder.ondataavailable = function(event) {
-			     if (event.data && event.data.size) {
-				 webms[which_queue].push(event.data);
-			     }
-			 };
-			 recorder.onstop = () => {
-			     var url = URL.createObjectURL(new Blob(webms[which_queue], { type: "video/webm" }));
-			     d3.select("body")
-			       .append("video")
-			       .attr("src", url)
-			       .attr("controls", true)
-			       .attr("autoplay", true);
-			 };
-			 queue.awaitAll(function(err, frames){
-			     recorder.start();
-			     drawFrame();
-			     function drawFrame() {
-				 if (frames.length) {
-				     context4webm.clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
-				     context4webm.drawImage(frames.shift(), 0, 0,
-							    width + margin.left + margin.right,height + margin.top + margin.bottom);
-				     requestAnimationFrame(drawFrame);
-				 } else {
-				     recorder.stop();
+	 canvas4webm = anim_data.scenarios.map(function(scen) {
+	     var cnv = document.createElement("canvas");
+	     cnv.width = width + margin.left + margin.right;
+	     cnv.height = height + margin.top + margin.bottom;
+	     return(cnv);
+	 }
+	     context4webm = canvas4webm.map(function(cnv) {return cnv.getContext("2d");});
+	     streams = 	 canvas4webm.map(function(cnv) {return cnv.captureStream();});
+	     // Gene Cards
+	     cards = d3.select("#gene-cards").selectAll("div.card-wrap")
+		       .data(anim_data.genes, d => d.name.Value);
+	     cards.exit().remove();
+	     cards.enter().append("div").attr("class","col-xl-6 card-wrap")
+		  .call(build_new_card)
+		  .merge(cards)
+		  .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
+	     build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
+	     movie_timer=d3.interval(function() {
+		 if (d3.select("#pauser").property("checked")) {
+		     update_movies(movie_ind);
+		     movie_ind = (movie_ind+1) % maxti;
+		     if (is_capturing && (movie_ind==0)) {
+			 queues.forEach(function(queue, which_queue) {
+			     var recorder = new MediaRecorder(streams[which_queue], { mimeType: "video/webm" });
+			     recorder.ondataavailable = function(event) {
+				 if (event.data && event.data.size) {
+				     webms[which_queue].push(event.data);
 				 }
-			     }
+			     };
+			     recorder.onstop = () => {
+				 var url = URL.createObjectURL(new Blob(webms[which_queue], { type: "video/webm" }));
+				 d3.select("body")
+				   .append("video")
+				   .attr("src", url)
+				   .attr("controls", true)
+				   .attr("autoplay", true);
+			     };
+			     queue.awaitAll(function(err, frames){
+				 recorder.start();
+				 drawFrame();
+				 function drawFrame() {
+				     if (frames.length) {
+					 context4webm[which_queue].clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
+					 context4webm[which_queue].drawImage(frames.shift(), 0, 0,
+									     width + margin.left + margin.right,height + margin.top + margin.bottom);
+					 requestAnimationFrame(drawFrame);
+				     } else {
+					 recorder.stop();
+				     }
+				 }
+			     });
 			 });
-		     });
-		     is_capturing=false;
+			 is_capturing=false;
+		     }
 		 }
-	     }
-	 }, 400);
+	     }, 400);
      };
     </script>
   </body>
