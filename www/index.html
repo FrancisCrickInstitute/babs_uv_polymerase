@@ -98,6 +98,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-queue.v3.min.js"></script>
     <!-- <script src="pages.js"></script> -->
     <script>
      /* Pages.start(window.location.href); */
@@ -109,6 +110,7 @@
      var cartoon_data;
      var cartoon_ind=0;
      var movie_ind=0;
+     var is_capturing=true;
      var movie_timer;
      var cartoon_timer;
      var margin = {top: 20, right: 10, bottom: 20, left: 40};
@@ -125,7 +127,7 @@
      var canvas4webm = document.createElement("canvas");
      canvas4webm.width = width + margin.left + margin.right;
      canvas4webm.height = height + margin.top + margin.bottom;
-     var context4webm = canvas.getContext("2d");
+     var context4webm = canvas4webm.getContext("2d");
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
 			 initiation_period:"Init. Period",
@@ -234,28 +236,75 @@
 	 d3.select("#scenarios").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
 	   .attr("d",d => valueline(d[ti]));
-	 d3.select("#scenarios").selectAll("svg")
-	   .each(recordFrame);
+	 if (is_capturing) {
+	     d3.select("#scenarios").selectAll("svg")
+	       .each(record_frame);
+	 }
 	 d3.select("#genes").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
 	   .attr("d", d => valueline(d[ti]));
 	 d3.selectAll('.movie_timer').text(format_hms(ti*tscale));
      }
-     var q = d3.queue(1);
+
+     /* Functions for creating webms */
+     var queue = d3.queue(1);
      function record_frame(d,i) {
-	 q.defer(drawFrame, this);
+	 queue.defer(drawFrame, this);
      }
-     
      function drawFrame(svg, cb) {
+	 var oDOM = svg.cloneNode(true)
+	 read_Element(oDOM, svg)
 	 var img = new Image(),
-             serialized = new XMLSerializer().serializeToString(svg),
+             serialized = new XMLSerializer().serializeToString(oDOM),
              url = URL.createObjectURL(new Blob([serialized], {type: "image/svg+xml"}));
 	 img.onload = function(){
 	     cb(null, img); //signals to queuer that 'img' is to be pushed onto queue
 	 };
 	 img.src = url;
      }	 
-     
+     var ContainerElements = ["svg","g"];
+     var RelevantStyles = {"rect":["fill","stroke","stroke-width"],
+			   "path":["fill","stroke","stroke-width"],
+			   "circle":["fill","stroke","stroke-width"],
+			   "line":["stroke","stroke-width"],
+			   "text":["fill","font-size","text-anchor"],
+			   "polygon":["stroke","fill"]};
+     function read_Element(ParentNode, OrigData){
+	 var Children = ParentNode.childNodes;
+	 var OrigChildDat = OrigData.childNodes;     
+	 for (var cd = 0; cd < Children.length; cd++){
+	     var Child = Children[cd];
+	     var TagName = Child.tagName;
+	     if (ContainerElements.indexOf(TagName) != -1){
+		 read_Element(Child, OrigChildDat[cd])
+	     } else if (TagName in RelevantStyles){
+		 var StyleDef = window.getComputedStyle(OrigChildDat[cd]);
+		 var StyleString = "";
+		 for (var st = 0; st < RelevantStyles[TagName].length; st++){
+		     StyleString += RelevantStyles[TagName][st] + ":" + StyleDef.getPropertyValue(RelevantStyles[TagName][st]) + "; ";
+		 }
+		 Child.setAttribute("style",StyleString);
+	     }
+	 }
+	 
+     }
+     var webm = [],
+	 stream = canvas4webm.captureStream(),
+	 recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+     recorder.ondataavailable = function(event) {
+	 if (event.data && event.data.size) {
+	     webm.push(event.data);
+	 }
+     };
+     recorder.onstop = () => {
+	 var url = URL.createObjectURL(new Blob(webm, { type: "video/webm" }));
+	 d3.select("body")
+	   .append("video")
+	   .attr("src", url)
+	   .attr("controls", true)
+	   .attr("autoplay", true);
+     };
+
      function show_damage(data) {
 	 var rect=cartoon.selectAll("rect")
 			 .data(data);
@@ -564,22 +613,9 @@
 	     }
 	 }
      }
-     var webm = [],
-	 stream = canvas4.captureStream(),
-	 recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-     recorder.ondataavailable = function(event) {
-	 if (event.data && event.data.size) {
-	     webm.push(event.data);
-	 }
-     };
-     recorder.onstop = () => {
-	 var url = URL.createObjectURL(new Blob(webm, { type: "video/webm" }));
-	 d3.select("body")
-	   .append("video")
-	   .attr("src", url)
-	   .attr("controls", true)
-	   .attr("autoplay", true);
-     };
+
+     
+     
      d3.json("anim_file.json").then(show_movies);
      function show_movies(anim) {
 	 if (typeof anim !== "undefined") {
@@ -606,8 +642,8 @@
 	 xscale.domain([0, maxx]);
 	 yscale.domain([0, maxy/n_iter]);
 	 var maxti = anim_data.data[0][0].length;
-	 var is_capturing = true,
-	     movie_ind=0;
+	 is_capturing = true;
+	 movie_ind=0;
 	 tscale = anim_data.default.tally_interval.Value;
 	 // Scenario cards
 	 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
@@ -631,13 +667,14 @@
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
-		 if (is_capturing && (movie_ind!=0)) {
+		 if (is_capturing && (movie_ind==0)) {
 		     queue.awaitAll(function(err, frames){
 			 recorder.start();
 			 drawFrame();
 			 function drawFrame() {
 			     if (frames.length) {
-				 context4webm.drawImage(frames.shift(), 0, 0, width, height);
+				 context4webm.drawImage(frames.shift(), 0, 0,
+							width + margin.left + margin.right,height + margin.top + margin.bottom);
 				 requestAnimationFrame(drawFrame);
 			     } else {
 				 recorder.stop();
