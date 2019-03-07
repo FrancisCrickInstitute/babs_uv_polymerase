@@ -427,12 +427,14 @@
 	     .html("&times;")
 	     .on("click", remove_card);
 	 show_form(card.append("form"),d => d3.entries(d));
-	 card
+	 var svg=card
 	     .append("div").attr("class", "card-body")
 	     .append("svg")
 	     .attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom)
-	     .attr("class", "card-text")
-	     .append("rect").attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom).attr("fill", "#fff")
+	     .attr("class", "card-text");
+	 svg
+	     .append("rect").attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom).attr("fill", "#fff");
+	 svg
 	     .append("g")
 	     .attr("class","track-group")
 	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
