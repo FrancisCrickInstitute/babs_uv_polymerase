@@ -247,9 +247,9 @@
      }
 
      /* Functions for creating webms */
-     var queue = d3.queue(1);
+     var queues;
      function record_frame(d,i) {
-	 queue.defer(drawFrame, this);
+	 queues[i].defer(drawFrame, this);
      }
      function drawFrame(svg, cb) {
 	 var oDOM = svg.cloneNode(true)
@@ -288,23 +288,9 @@
 	 }
 	 
      }
-     var webm = [],
-	 stream = canvas4webm.captureStream(),
-	 recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-     recorder.ondataavailable = function(event) {
-	 if (event.data && event.data.size) {
-	     webm.push(event.data);
-	 }
-     };
-     recorder.onstop = () => {
-	 var url = URL.createObjectURL(new Blob(webm, { type: "video/webm" }));
-	 d3.select("body")
-	   .append("video")
-	   .attr("src", url)
-	   .attr("controls", true)
-	   .attr("autoplay", true);
-     };
-
+     var webm, webms,
+	 stream = canvas4webm.captureStream();
+     
      function show_damage(data) {
 	 var rect=cartoon.selectAll("rect")
 			 .data(data);
@@ -654,6 +640,8 @@
 	      .merge(cards)
 	      .call(update_card, anim_data.data, anim_data.genes);
 	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
+	 queues=anim_data.scenarios.map(scen => d3.queue(1));
+	 webms=anim_data.scenarios.map(scen => []);
 	 // Gene Cards
 	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
 		   .data(anim_data.genes, d => d.name.Value);
@@ -668,20 +656,36 @@
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
 		 if (is_capturing && (movie_ind==0)) {
-		     queue.awaitAll(function(err, frames){
-			 recorder.start();
-			 drawFrame();
-			 function drawFrame() {
-			     if (frames.length) {
-				 context4webm.drawImage(frames.shift(), 0, 0,
-							width + margin.left + margin.right,height + margin.top + margin.bottom);
-				 requestAnimationFrame(drawFrame);
-			     } else {
-				 recorder.stop();
+		     queues.forEach(function(queue, which_queue) {
+			 var recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+			 recorder.ondataavailable = function(event) {
+			     if (event.data && event.data.size) {
+				 webms[which_queue].push(event.data);
 			     }
-			 }
-		     });
-		     is_capturing=false;
+			 };
+			 recorder.onstop = () => {
+			     var url = URL.createObjectURL(new Blob(webms[which_queue], { type: "video/webm" }));
+			     d3.select("body")
+			       .append("video")
+			       .attr("src", url)
+			       .attr("controls", true)
+			       .attr("autoplay", true);
+			 };
+			 queue.awaitAll(function(err, frames){
+			     recorder.start();
+			     drawFrame();
+			     function drawFrame() {
+				 if (frames.length) {
+				     context4webm.drawImage(frames.shift(), 0, 0,
+							    width + margin.left + margin.right,height + margin.top + margin.bottom);
+				     requestAnimationFrame(drawFrame);
+				 } else {
+				     recorder.stop();
+				 }
+			     }
+			 });
+		     }
+			 is_capturing=false;
 		 }
 	     }
 	 }, 400);
