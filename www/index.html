@@ -432,6 +432,7 @@
 	     .append("svg")
 	     .attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom)
 	     .attr("class", "card-text")
+	     .append("rect").attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom).attr("fill", "#fff")
 	     .append("g")
 	     .attr("class","track-group")
 	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -676,6 +677,7 @@
 			     drawFrame();
 			     function drawFrame() {
 				 if (frames.length) {
+				     context4webm.clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
 				     context4webm.drawImage(frames.shift(), 0, 0,
 							    width + margin.left + margin.right,height + margin.top + margin.bottom);
 				     requestAnimationFrame(drawFrame);
@@ -684,8 +686,8 @@
 				 }
 			     }
 			 });
-		     }
-			 is_capturing=false;
+		     });
+		     is_capturing=false;
 		 }
 	     }
 	 }, 400);
