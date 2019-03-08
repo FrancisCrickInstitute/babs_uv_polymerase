@@ -87,6 +87,7 @@
 	  <p id="json_contents"></p>
 	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
 	  <a id="download_csv" style="display:none" >Download polymerase stats</a>
+	  <ul id="download_movies"</ul>
 	</div>
 	<div id="progress"></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
@@ -124,7 +125,6 @@
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
-     var canvas4webm, context4webm;
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
 			 initiation_period:"Init. Period",
@@ -285,419 +285,424 @@
 	 }
 	 
      }
-     var webm, webms,streams;
-     
-     function show_damage(data) {
-	 var rect=cartoon.selectAll("rect")
-			 .data(data);
-	 rect.enter().append("rect")
-     	     .attr("class", "active_damage")
-	     .attr("width", radius).attr("height", 2*radius)
-	     .merge(rect)
-	     .attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
-	 rect.exit().remove();
-	 var line=cartoon.selectAll("line")
-			 .data(data);
-	 line.enter().append("line")
-	     .attr("stroke","black")
-	     .attr("y1", 380).attr("y2", 380+radius)
-	     .merge(line)
-	     .attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
-	     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
-	 line.exit().remove();
+     function generate_webms() {
+	 d3.selectAll(".download_movies").remove();
+	 queues.forEach(function(queue, which_queue) {
+	     var canvas4webm = document.createElement("canvas");
+	     canvas4webm.width = width + margin.left + margin.right;
+	     canvas4webm.height = height + margin.top + margin.bottom;
+	     var webm=[];
+	     context4webm = canvas4webm.getContext("2d");
+	     var stream = canvas4webm.captureStream();
+	     var recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+	     recorder.ondataavailable = function(event) {
+		 if (event.data && event.data.size) {
+		     webm.push(event.data);
+		 }
+	     };
+	     recorder.onstop = () => {
+		 d3.select(".download_movies")
+		   .append("li")
+		   .append("a")
+		   .attr("href", url)
+		   .attr("download", anim_data[which_queue].name + ".webm")
+		   .text("Movie for scenario " + anim_data[which_queue].name);
+		 /* d3.select("body")
+		    .append("video")
+		    .attr("src", url)
+		    .attr("controls", true)
+		    .attr("autoplay", true); */
+	     };
+		       queue.awaitAll(function(err, frames){
+			   recorder.start();
+			   drawFrame();
+			   function drawFrame() {
+			       if (frames.length) {
+				   context4webm.clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
+				   context4webm.drawImage(frames.shift(), 0, 0,
+							  width + margin.left + margin.right,height + margin.top + margin.bottom);
+				   requestAnimationFrame(drawFrame);
+			       } else {
+				   recorder.stop();
+			       }
+			   }
+		       });
+	 });
      }
-     function add_radio(d) {
-	 var row=d3.select(this);
-	 var options = d.value.Unit.split("|");
-	 var buttons=row.selectAll("span").data(options);
-	 buttons.exit().remove();
-	 var b=buttons.enter()
-		      .append("span").attr("class","col-form-label")
-		      .merge(buttons);
-	 b.append("input").attr("type","radio")
-	  .attr("name", d.key)
-	  .property("checked", (dat,i) => i==d.value.Value)
-	  .attr("value",(d,i) => i);
-	 b.append("span").text(I);
-	 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;})
-     }
-     function show_form(node, data) {
-	 var rows = node.selectAll('div')
-			.data(data, d => d.key)
-			.enter().filter(d => d.value.Unit!="NA")
-			.append('div').attr("class", "row");
-	 rows.append('label')
-	     .attr("class", "col-4 col-form-label")
-	     .style("text-align","right")
-	     .text(label)
-	     .attr("title",tooltip);
-	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
-	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
-	     .attr("class", "form-control col-4")
-	     .attr("value", d=>d.value.Value)
-	     .on("input", function(d,i){d.value.Value=+this.value;});
-	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
-	     .text(d=> d.value.Unit);
-     }
-     function recalculate() {
-	 cartoon_timer.stop();
-	 movie_timer.stop();
-	 d3.json("recalculate.json", {
-	     method: "POST",
-	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
-	     headers: {"Content-type": "application/json; charset=UTF-8"}
-	 }).then(show_movies);
-     }
-     function progress(task, n) {
-	 d3.select("#progress").text(task + ": " +  n + "/100");
-     }
-     function show_repair(data) {
-	 var rows = d3.select("#repair").selectAll('tr')
-		      .data(data);
-	 rows.exit().remove();
-	 var all_rows = rows.enter()
-			    .append('tr')
-			    .merge(rows);
-	 all_rows.filter(d => d>cartoon_data.params.run_length)
-		 .attr("class", "text-muted");
-	 var filled_rows = all_rows.selectAll('td')
-				   .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}]);
-	 filled_rows
-	     .enter().append('td')
-	     .merge(filled_rows)
-	     .text(d => d.val)
-	     .attr("onclick", function(d,i) {return (i==1)?"set_time(" + (d.raw-15) + ")":"highlight_site(" + (d.raw) +")"});
-     }
+	     
+	     function show_damage(data) {
+		 var rect=cartoon.selectAll("rect")
+				 .data(data);
+		 rect.enter().append("rect")
+     		     .attr("class", "active_damage")
+		     .attr("width", radius).attr("height", 2*radius)
+		     .merge(rect)
+		     .attr("y", d => pos_to_xy(d).y).attr("x", d => pos_to_xy(d).x);
+		 rect.exit().remove();
+		 var line=cartoon.selectAll("line")
+				 .data(data);
+		 line.enter().append("line")
+		     .attr("stroke","black")
+		     .attr("y1", 380).attr("y2", 380+radius)
+		     .merge(line)
+		     .attr("x1", d => d*cartoon_width/cartoon_data.params.gene_length)
+		     .attr("x2", d => d*cartoon_width/cartoon_data.params.gene_length);
+		 line.exit().remove();
+	     }
+	     function add_radio(d) {
+		 var row=d3.select(this);
+		 var options = d.value.Unit.split("|");
+		 var buttons=row.selectAll("span").data(options);
+		 buttons.exit().remove();
+		 var b=buttons.enter()
+			      .append("span").attr("class","col-form-label")
+			      .merge(buttons);
+		 b.append("input").attr("type","radio")
+		  .attr("name", d.key)
+		  .property("checked", (dat,i) => i==d.value.Value)
+		  .attr("value",(d,i) => i);
+		 b.append("span").text(I);
+		 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;})
+	     }
+	     function show_form(node, data) {
+		 var rows = node.selectAll('div')
+				.data(data, d => d.key)
+				.enter().filter(d => d.value.Unit!="NA")
+				.append('div').attr("class", "row");
+		 rows.append('label')
+		     .attr("class", "col-4 col-form-label")
+		     .style("text-align","right")
+		     .text(label)
+		     .attr("title",tooltip);
+		 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
+		 rows.filter(d => !d.value.Unit.includes("|")).append("input")
+		     .attr("class", "form-control col-4")
+		     .attr("value", d=>d.value.Value)
+		     .on("input", function(d,i){d.value.Value=+this.value;});
+		 rows.filter(d => !d.value.Unit.includes("|")).append("span")
+		     .text(d=> d.value.Unit);
+	     }
+	     function recalculate() {
+		 cartoon_timer.stop();
+		 movie_timer.stop();
+		 d3.json("recalculate.json", {
+		     method: "POST",
+		     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
+		     headers: {"Content-type": "application/json; charset=UTF-8"}
+		 }).then(show_movies);
+	     }
+	     function progress(task, n) {
+		 d3.select("#progress").text(task + ": " +  n + "/100");
+	     }
+	     function show_repair(data) {
+		 var rows = d3.select("#repair").selectAll('tr')
+			      .data(data);
+		 rows.exit().remove();
+		 var all_rows = rows.enter()
+				    .append('tr')
+				    .merge(rows);
+		 all_rows.filter(d => d>cartoon_data.params.run_length)
+			 .attr("class", "text-muted");
+		 var filled_rows = all_rows.selectAll('td')
+					   .data((d,i) => [{val:cartoon_data.damage[i], raw:i},{val:format_hms(d), raw:d}]);
+		 filled_rows
+		     .enter().append('td')
+		     .merge(filled_rows)
+		     .text(d => d.val)
+		     .attr("onclick", function(d,i) {return (i==1)?"set_time(" + (d.raw-15) + ")":"highlight_site(" + (d.raw) +")"});
+	     }
 
-     function build_dropdown(node, data, cl) {
-	 var d1=node.selectAll("div.dropdown").data([1])
-		    .enter().append("div").attr("class","dropdown")
-	 d1.append("button")
-		    .attr("class","btn btn-secondary dropdown-toggle")
-		    .attr("type","button")
-		    .attr("data-toggle","dropdown")
-		    .text("New Parameter");
-	 var d2=d1.append("div")
-		  .attr("class","dropdown-menu");
-	 d2.selectAll("a")
-	   .data(data.filter(d => d.value.Unit != "NA"))
-	   .enter().append("a")
-	   .attr("class","dropdown-item "+cl)
-	   .text(label)
-	   .on("click", add_field);
-     }
-     function add_field(d) {
-	 var form_rows ;
-	 // var myobj = {};
-	 // myobj[d.key]=d.value;
-	 if (d3.select(this).classed("scenario")) {
-	     form_rows= d3.select("#scene-cards").selectAll("div.card-wrap").selectAll("form");
-	     anim_data.scenarios = anim_data.scenarios.map(sc => Object.assign(sc,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
-	     show_form(form_rows,(d2,i) => d3.entries(anim_data.scenarios[i]));
-	 } else {
-	     form_rows= d3.select("#gene-cards").selectAll("div.card-wrap").selectAll("form");
-	     anim_data.genes = anim_data.genes.map(g => Object.assign(g,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
-	     show_form(form_rows,(d2,i) => d3.entries(anim_data.genes[i]));
-	 }
-     }
-     
-     function build_new_card(wrap) {
-	 var card = wrap.append("div").attr("class","card");
-	 var head = card
-	     .append("div").attr("class", "card-title")
-	     .style("color","white")
-	     .append("div").attr("class", "row");
-	 head
-	     .append("input").attr("type", "text")
-	     .attr("class", "form-control-plaintext col-9 form-title")
-	     .style("color", "white")
-	     .on("input", function(d){d.name.Value=this.value;});
-	 head
-	     .append("input").attr("type", "color")
-	     .attr("class", "col-2 picker")
-	     .on("input", function(d,i){d.colour.Value=this.value; show_movies();});
-	 head
-	     .append("span")
-	     .attr("class", "form-control-plaintext col-1")
-	     .attr("style","cursor:not-allowed")
-	     .html("&times;")
-	     .on("click", remove_card);
-	 show_form(card.append("form"),d => d3.entries(d));
-	 var svg=card
-	     .append("div").attr("class", "card-body")
-	     .append("svg")
-	     .attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom)
-	     .attr("class", "card-text");
-	 svg
-	     .append("rect").attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom).attr("fill", "#fff");
-	 svg
-	     .append("g")
-	     .attr("class","track-group")
-	     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-	 card.select(".track-group").append("g")
-	     .attr("transform", "translate(0," + height + ")")
-	     .call(d3.axisBottom(xscale));
-	 card.select(".track-group").append("g")
-	     .call(d3.axisLeft(yscale));
-	 card.append("text").attr("x",width*.8).attr("y", height*.2)
-	     .attr("class","movie_timer")
-	     .text("0");
-     }
-     function remove_card(d) {
-	 var i;
-	 if (this.parentNode.parentNode.parentNode.parentNode.parentNode.id=="gene-cards") {
-	     i= d3.select("#gene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
-	     anim_data.genes.splice(i,1);
-	     anim_data.data.forEach(x => x.splice(i,1));
-	 } else {
-	     i = d3.select("#scene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
-	     anim_data.scenarios.splice(i,1);
-	     anim_data.data.splice(i,1);
-	 }
-	 show_movies();
-     }
-     function update_card(card, dat, annot_within) {
-	 card.style("border-color", (d) => d.colour.Value);
-	 card.select(".card-title").style("background-color", d => d.colour.Value);
-	 card.select(".picker").property("value", d => d.colour.Value);
-	 card.select(".form-title").attr("value",d => d.name.Value);
-	 var paths=card.select("g.track-group").selectAll("path.pol_path")
-		       .data((d,i) => dat[i]);
-	 paths.exit().remove();
-	 paths.enter().append("path")
-	      .attr("class","pol_path")
-	      .merge(paths)
-	      .attr("stroke", (d,i) => annot_within[i].colour.Value)
-	      .attr("d", (d,i) => valueline(d[0]));
-     }
-
-     const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
-
-     function set_time(v) {
-	 ind=0;
-	 while (cartoon_data.pols[ind].time < v) {
-	     ind++;
-	 }
-	 cartoon_ind=ind;
-	 cartoon.selectAll("circle").filter(".exit").remove();
-     }
-     function highlight_site(ind) {
-	 d3.selectAll("rect").filter((d,i) => i==ind)
-	   .transition().attr("height", radius*4).attr("width", radius*2)
-	   .transition().attr("height", radius*2).attr("width", radius);
-     }
-     function clone_card(obj, add) {
-	 copy = {};
-	 for (var attr in obj) {
-             if (obj.hasOwnProperty(attr)) copy[attr] = {Value:obj[attr].Value, Unit:obj[attr].Unit};
-         }
-	 return Object.assign(copy, add);
-     }
-
-     d3.select('#add-scene')
-       .on('click', function(d, i) {
-	   copy = {};
-	   anim_data.scenarios.push(clone_card(anim_data.scenarios[0],
-					       {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
-	   var card = d3.select("#scene-cards").selectAll("div.card-wrap")
-			.data(anim_data.scenarios);
-	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
-	       .call(build_new_card)
-	       .call(update_card, [[0]], anim_data.genes);
-       });
-     d3.select('#add-gene')
-       .on('click', function(d, i) {	
-	   anim_data.genes.push(clone_card(anim_data.genes[0],
-					   {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
-	   var card = d3.select("#gene-cards").selectAll("div.card-wrap")
-			.data(anim_data.genes);
-	   card.enter().append("div").attr("class","col-xl-6 card-wrap")
-	       .call(build_new_card)
-	       .call(update_card, [[0]], anim_data.scenarios);
-       });
-     function load_cartoon(d) {
-	 cartoon_ind=1;
-	 cartoon_data=d;
-	 cartoon.selectAll("circle").data([]).exit().remove();
-	 show_damage(d.damage);
-	 show_repair(d.repair);
-	 update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id));
-	 d3.select("#time_slider").property("max", cartoon_data.params.run_length);
-	 cartoon_timer = d3.interval(function() {
-	     update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id))
-	     d3.select("#timer").text(format_hms(cartoon_data.pols[cartoon_ind].time));
-	     cartoon_ind = (cartoon_ind+1) % cartoon_data.pols.length;}, 1);
-     }
-     function show_summary_movie() {
-	 var all_movie_scenarios =  d3.select("#movie").selectAll("g")
-				      .data(anim_data.data);
-	 all_movie_scenarios.exit().remove();
-	 var all_tracks = all_movie_scenarios
-	     .enter().append("g")
-	     .merge(all_movie_scenarios)
-	     .attr("stroke",(d,i) => anim_data.scenarios[i].colour.Value)
-	     .selectAll("path")
-	     .data(I);
-	 all_tracks.exit().remove();
-	 all_tracks
-	     .enter().append("path")
-	     .attr("class", "pol_movie")
-	     .merge(all_tracks)
-	     .attr("d", d => valueline(d[1]));
-     }
-     function param_format(p, obj) {
-	 str="";
-	 var val;
-	 if (obj[p].Unit!="NA") {
-	     val = (obj[p].Value===null) ? "Inf " : obj[p].Value;
-	     val +=  obj[p].Unit;
-	     val = (obj[p].Unit.includes("|")) ? obj[p].Unit.split("|")[obj[p].Value] : val;
-	     str=label({key:p}) + "," +  val  + "\n";
-	 }
-	 return(str);
-     }
-     function exportCSV(p) {
-	 hist=p.history;
-	 var str = '';
-	 for (cell in hist) {
-	     for (scenario in hist[cell]) {
-		 for (ev in hist[cell][scenario]) {
-		     str += `${cell},${scenario},${ev},${hist[cell][scenario][ev]}\n`;
+	     function build_dropdown(node, data, cl) {
+		 var d1=node.selectAll("div.dropdown").data([1])
+			    .enter().append("div").attr("class","dropdown")
+		 d1.append("button")
+			    .attr("class","btn btn-secondary dropdown-toggle")
+			    .attr("type","button")
+			    .attr("data-toggle","dropdown")
+			    .text("New Parameter");
+		 var d2=d1.append("div")
+			  .attr("class","dropdown-menu");
+		 d2.selectAll("a")
+		   .data(data.filter(d => d.value.Unit != "NA"))
+		   .enter().append("a")
+		   .attr("class","dropdown-item "+cl)
+		   .text(label)
+		   .on("click", add_field);
+	     }
+	     function add_field(d) {
+		 var form_rows ;
+		 // var myobj = {};
+		 // myobj[d.key]=d.value;
+		 if (d3.select(this).classed("scenario")) {
+		     form_rows= d3.select("#scene-cards").selectAll("div.card-wrap").selectAll("form");
+		     anim_data.scenarios = anim_data.scenarios.map(sc => Object.assign(sc,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+		     show_form(form_rows,(d2,i) => d3.entries(anim_data.scenarios[i]));
+		 } else {
+		     form_rows= d3.select("#gene-cards").selectAll("div.card-wrap").selectAll("form");
+		     anim_data.genes = anim_data.genes.map(g => Object.assign(g,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+		     show_form(form_rows,(d2,i) => d3.entries(anim_data.genes[i]));
 		 }
 	     }
-	 }
-	 str += `\nSCENARIOS\n`;
-	 p.scenarios.forEach(function(scen){
-	     str += `${scen.name.Value}\n`;
-	     for (param in scen) {
-		 str += param_format(param, scen);
+	     
+	     function build_new_card(wrap) {
+		 var card = wrap.append("div").attr("class","card");
+		 var head = card
+		     .append("div").attr("class", "card-title")
+		     .style("color","white")
+		     .append("div").attr("class", "row");
+		 head
+		     .append("input").attr("type", "text")
+		     .attr("class", "form-control-plaintext col-9 form-title")
+		     .style("color", "white")
+		     .on("input", function(d){d.name.Value=this.value;});
+		 head
+		     .append("input").attr("type", "color")
+		     .attr("class", "col-2 picker")
+		     .on("input", function(d,i){d.colour.Value=this.value; show_movies();});
+		 head
+		     .append("span")
+		     .attr("class", "form-control-plaintext col-1")
+		     .attr("style","cursor:not-allowed")
+		     .html("&times;")
+		     .on("click", remove_card);
+		 show_form(card.append("form"),d => d3.entries(d));
+		 var svg=card
+		     .append("div").attr("class", "card-body")
+		     .append("svg")
+		     .attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom)
+		     .attr("class", "card-text");
+		 svg
+		     .append("rect").attr("width",width + margin.left + margin.right).attr("height",height + margin.top + margin.bottom).attr("fill", "#fff");
+		 svg
+		     .append("g")
+		     .attr("class","track-group")
+		     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		 card.select(".track-group").append("g")
+		     .attr("transform", "translate(0," + height + ")")
+		     .call(d3.axisBottom(xscale));
+		 card.select(".track-group").append("g")
+		     .call(d3.axisLeft(yscale));
+		 svg.append("text").attr("x",420).attr("y", 40)
+		    .attr("class","movie_timer")
+		    .text("0");
 	     }
-	 });
-	 str += `\nGENES\n`;
-	 p.genes.forEach(function(gene){
-	     str += `${gene.name.Value}\n`;
-	     for (param in gene) {
-		 str += param_format(param, gene);
+	     function remove_card(d) {
+		 var i;
+		 if (this.parentNode.parentNode.parentNode.parentNode.parentNode.id=="gene-cards") {
+		     i= d3.select("#gene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
+		     anim_data.genes.splice(i,1);
+		     anim_data.data.forEach(x => x.splice(i,1));
+		 } else {
+		     i = d3.select("#scene-cards").selectAll(".card-wrap").data().findIndex(x=> x.name.Value==d.name.Value);
+		     anim_data.scenarios.splice(i,1);
+		     anim_data.data.splice(i,1);
+		 }
+		 show_movies();
 	     }
-	 });
-	 str += `\nGLOBAL\n`;
-	 for (param in p.default) {
-	     str += param_format(param, p.default);
-	 }
-	 var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
-	 if (navigator.msSaveBlob) { // IE 10+
-	     navigator.msSaveBlob(blob, exportedFilenmae);
-	 } else {
-	     var link = document.getElementById('download_csv');
-             if (link.download !== undefined) { // feature detection
-		 // Browsers that support HTML5 download attribute
-		 var url = URL.createObjectURL(blob);
-		 link.setAttribute("href", url);
-		 link.setAttribute("download", "uv_damage.csv");
-		 link.style.display = "block";
+	     function update_card(card, dat, annot_within) {
+		 card.style("border-color", (d) => d.colour.Value);
+		 card.select(".card-title").style("background-color", d => d.colour.Value);
+		 card.select(".picker").property("value", d => d.colour.Value);
+		 card.select(".form-title").attr("value",d => d.name.Value);
+		 var paths=card.select("g.track-group").selectAll("path.pol_path")
+			       .data((d,i) => dat[i]);
+		 paths.exit().remove();
+		 paths.enter().append("path")
+		      .attr("class","pol_path")
+		      .merge(paths)
+		      .attr("stroke", (d,i) => annot_within[i].colour.Value)
+		      .attr("d", (d,i) => valueline(d[0]));
 	     }
-	 }
-     }
 
-     
-     
-     d3.json("anim_file.json").then(show_movies);
-     function show_movies(anim) {
-	 if (typeof anim !== "undefined") {
-	     anim_data=anim;
-	     if (anim.hasOwnProperty('history')) {
-		 exportCSV(anim);
+	     const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
+
+	     function set_time(v) {
+		 ind=0;
+		 while (cartoon_data.pols[ind].time < v) {
+		     ind++;
+		 }
+		 cartoon_ind=ind;
+		 cartoon.selectAll("circle").filter(".exit").remove();
 	     }
-	     if (anim.hasOwnProperty('cartoons')) {
-		 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
-		 opts.exit().remove();
-		 opts.enter().append("option")
-		     .merge(opts)
-		     .attr("value", I).text(I);
-		 d3.select("#cartoon_selector").on("change", function(d) {load_cartoon(anim.cartoons[this.value]);});
-		 load_cartoon(anim.cartoons[anim_data["scenarios"][0].name.Value]);
-	     } else {
-		 d3.json("test.json").then(load_cartoon);
+	     function highlight_site(ind) {
+		 d3.selectAll("rect").filter((d,i) => i==ind)
+		   .transition().attr("height", radius*4).attr("width", radius*2)
+		   .transition().attr("height", radius*2).attr("width", radius);
 	     }
-	 }
-	 show_form(d3.select("#params_form"), d3.entries(anim_data.default));
-	 show_summary_movie();
-	 var maxy=anim_data.data.map(z => z.map(y => y.map(x => x.reduce(maxer)).reduce(maxer)).reduce(maxer)).reduce(maxer);
-	 var maxx = anim_data.data.map(y => y.map(x => x[1].length).reduce(maxer)).reduce(maxer)
-	 xscale.domain([0, maxx]);
-	 yscale.domain([0, maxy/n_iter]);
-	 var maxti = anim_data.data[0][0].length;
-	 is_capturing = true;
-	 movie_ind=0;
-	 tscale = anim_data.default.tally_interval.Value;
-	 // Scenario cards
-	 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
-		       .data(anim_data.scenarios, d => d.name.Value);
-	 cards.exit().remove();
-	 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
-	      .call(build_new_card)
-	      .merge(cards)
-	      .call(update_card, anim_data.data, anim_data.genes);
-	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
-	 queues=anim_data.scenarios.map(scen => d3.queue(1));
-	 webms=anim_data.scenarios.map(scen => []);
-	 canvas4webm = anim_data.scenarios.map(function(scen) {
-	     var cnv = document.createElement("canvas");
-	     cnv.width = width + margin.left + margin.right;
-	     cnv.height = height + margin.top + margin.bottom;
-	     return(cnv);
-	 }
-	     context4webm = canvas4webm.map(function(cnv) {return cnv.getContext("2d");});
-	     streams = 	 canvas4webm.map(function(cnv) {return cnv.captureStream();});
-	     // Gene Cards
-	     cards = d3.select("#gene-cards").selectAll("div.card-wrap")
-		       .data(anim_data.genes, d => d.name.Value);
-	     cards.exit().remove();
-	     cards.enter().append("div").attr("class","col-xl-6 card-wrap")
-		  .call(build_new_card)
-		  .merge(cards)
-		  .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
-	     build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
-	     movie_timer=d3.interval(function() {
-		 if (d3.select("#pauser").property("checked")) {
-		     update_movies(movie_ind);
-		     movie_ind = (movie_ind+1) % maxti;
-		     if (is_capturing && (movie_ind==0)) {
-			 queues.forEach(function(queue, which_queue) {
-			     var recorder = new MediaRecorder(streams[which_queue], { mimeType: "video/webm" });
-			     recorder.ondataavailable = function(event) {
-				 if (event.data && event.data.size) {
-				     webms[which_queue].push(event.data);
-				 }
-			     };
-			     recorder.onstop = () => {
-				 var url = URL.createObjectURL(new Blob(webms[which_queue], { type: "video/webm" }));
-				 d3.select("body")
-				   .append("video")
-				   .attr("src", url)
-				   .attr("controls", true)
-				   .attr("autoplay", true);
-			     };
-			     queue.awaitAll(function(err, frames){
-				 recorder.start();
-				 drawFrame();
-				 function drawFrame() {
-				     if (frames.length) {
-					 context4webm[which_queue].clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
-					 context4webm[which_queue].drawImage(frames.shift(), 0, 0,
-									     width + margin.left + margin.right,height + margin.top + margin.bottom);
-					 requestAnimationFrame(drawFrame);
-				     } else {
-					 recorder.stop();
-				     }
-				 }
-			     });
-			 });
-			 is_capturing=false;
+	     function clone_card(obj, add) {
+		 copy = {};
+		 for (var attr in obj) {
+		     if (obj.hasOwnProperty(attr)) copy[attr] = {Value:obj[attr].Value, Unit:obj[attr].Unit};
+		 }
+		 return Object.assign(copy, add);
+	     }
+
+	     d3.select('#add-scene')
+	       .on('click', function(d, i) {
+		   copy = {};
+		   anim_data.scenarios.push(clone_card(anim_data.scenarios[0],
+						       {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+		   var card = d3.select("#scene-cards").selectAll("div.card-wrap")
+				.data(anim_data.scenarios);
+		   card.enter().append("div").attr("class","col-xl-6 card-wrap")
+		       .call(build_new_card)
+		       .call(update_card, [[0]], anim_data.genes);
+	       });
+	     d3.select('#add-gene')
+	       .on('click', function(d, i) {	
+		   anim_data.genes.push(clone_card(anim_data.genes[0],
+						   {name:{Value:"New", Unit:"NA"}, colour:{Value:"#000000", Unit:"NA"}}));
+		   var card = d3.select("#gene-cards").selectAll("div.card-wrap")
+				.data(anim_data.genes);
+		   card.enter().append("div").attr("class","col-xl-6 card-wrap")
+		       .call(build_new_card)
+		       .call(update_card, [[0]], anim_data.scenarios);
+	       });
+	     function load_cartoon(d) {
+		 cartoon_ind=1;
+		 cartoon_data=d;
+		 cartoon.selectAll("circle").data([]).exit().remove();
+		 show_damage(d.damage);
+		 show_repair(d.repair);
+		 update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id));
+		 d3.select("#time_slider").property("max", cartoon_data.params.run_length);
+		 cartoon_timer = d3.interval(function() {
+		     update_cartoon(xyi(cartoon_data.pols[cartoon_ind].position, cartoon_data.pols[cartoon_ind].id))
+		     d3.select("#timer").text(format_hms(cartoon_data.pols[cartoon_ind].time));
+		     cartoon_ind = (cartoon_ind+1) % cartoon_data.pols.length;}, 1);
+	     }
+	     function show_summary_movie() {
+		 var all_movie_scenarios =  d3.select("#movie").selectAll("g")
+					      .data(anim_data.data);
+		 all_movie_scenarios.exit().remove();
+		 var all_tracks = all_movie_scenarios
+		     .enter().append("g")
+		     .merge(all_movie_scenarios)
+		     .attr("stroke",(d,i) => anim_data.scenarios[i].colour.Value)
+		     .selectAll("path")
+		     .data(I);
+		 all_tracks.exit().remove();
+		 all_tracks
+		     .enter().append("path")
+		     .attr("class", "pol_movie")
+		     .merge(all_tracks)
+		     .attr("d", d => valueline(d[1]));
+	     }
+	     function param_format(p, obj) {
+		 str="";
+		 var val;
+		 if (obj[p].Unit!="NA") {
+		     val = (obj[p].Value===null) ? "Inf " : obj[p].Value;
+		     val +=  obj[p].Unit;
+		     val = (obj[p].Unit.includes("|")) ? obj[p].Unit.split("|")[obj[p].Value] : val;
+		     str=label({key:p}) + "," +  val  + "\n";
+		 }
+		 return(str);
+	     }
+	     function exportCSV(p) {
+		 hist=p.history;
+		 var str = '';
+		 for (cell in hist) {
+		     for (scenario in hist[cell]) {
+			 for (ev in hist[cell][scenario]) {
+			     str += `${cell},${scenario},${ev},${hist[cell][scenario][ev]}\n`;
+			 }
 		     }
 		 }
-	     }, 400);
-     };
+		 str += `\nSCENARIOS\n`;
+		 p.scenarios.forEach(function(scen){
+		     str += `${scen.name.Value}\n`;
+		     for (param in scen) {
+			 str += param_format(param, scen);
+		     }
+		 });
+		 str += `\nGENES\n`;
+		 p.genes.forEach(function(gene){
+		     str += `${gene.name.Value}\n`;
+		     for (param in gene) {
+			 str += param_format(param, gene);
+		     }
+		 });
+		 str += `\nGLOBAL\n`;
+		 for (param in p.default) {
+		     str += param_format(param, p.default);
+		 }
+		 var blob = new Blob([str], { type: 'text/csv;charset=utf-8;' });
+		 if (navigator.msSaveBlob) { // IE 10+
+		     navigator.msSaveBlob(blob, exportedFilenmae);
+		 } else {
+		     var link = document.getElementById('download_csv');
+		     if (link.download !== undefined) { // feature detection
+			 // Browsers that support HTML5 download attribute
+			 var url = URL.createObjectURL(blob);
+			 link.setAttribute("href", url);
+			 link.setAttribute("download", "uv_damage.csv");
+			 link.style.display = "block";
+		     }
+		 }
+	     }
+
+	     
+	     
+	     d3.json("anim_file.json").then(show_movies);
+	     function show_movies(anim) {
+		 if (typeof anim !== "undefined") {
+		     anim_data=anim;
+		     if (anim.hasOwnProperty('history')) {
+			 exportCSV(anim);
+		     }
+		     if (anim.hasOwnProperty('cartoons')) {
+			 var opts = d3.select("#cartoon_selector").selectAll("option").data(d3.keys(anim.cartoons));
+			 opts.exit().remove();
+			 opts.enter().append("option")
+			     .merge(opts)
+			     .attr("value", I).text(I);
+			 d3.select("#cartoon_selector").on("change", function(d) {load_cartoon(anim.cartoons[this.value]);});
+			 load_cartoon(anim.cartoons[anim_data["scenarios"][0].name.Value]);
+		     } else {
+			 d3.json("test.json").then(load_cartoon);
+		     }
+		 }
+		 show_form(d3.select("#params_form"), d3.entries(anim_data.default));
+		 show_summary_movie();
+		 var maxy=anim_data.data.map(z => z.map(y => y.map(x => x.reduce(maxer)).reduce(maxer)).reduce(maxer)).reduce(maxer);
+		 var maxx = anim_data.data.map(y => y.map(x => x[1].length).reduce(maxer)).reduce(maxer)
+		 xscale.domain([0, maxx]);
+		 yscale.domain([0, maxy/n_iter]);
+		 var maxti = anim_data.data[0][0].length;
+		 is_capturing = true;
+		 movie_ind=0;
+		 tscale = anim_data.default.tally_interval.Value;
+		 // Scenario cards
+		 var cards = d3.select("#scene-cards").selectAll("div.card-wrap")
+			       .data(anim_data.scenarios, d => d.name.Value);
+		 cards.exit().remove();
+		 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
+		      .call(build_new_card)
+		      .merge(cards)
+		      .call(update_card, anim_data.data, anim_data.genes);
+		 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
+		 queues=anim_data.scenarios.map(scen => d3.queue(1));
+		 // Gene Cards
+		 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
+			   .data(anim_data.genes, d => d.name.Value);
+		 cards.exit().remove();
+		 cards.enter().append("div").attr("class","col-xl-6 card-wrap")
+		      .call(build_new_card)
+		      .merge(cards)
+		      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
+		 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
+		 movie_timer=d3.interval(function() {
+		     if (d3.select("#pauser").property("checked")) {
+			 update_movies(movie_ind);
+			 movie_ind = (movie_ind+1) % maxti;
+			 if (is_capturing && (movie_ind==0)) { // ie we've done a complete video loop
+			     generate_webms();
+			     is_capturing=false;
+			 }
+		     }
+		 }, 400);
+	     };
     </script>
   </body>
 </html>
