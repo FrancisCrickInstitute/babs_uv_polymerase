@@ -696,7 +696,7 @@
 	      .merge(cards)
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
 	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
-	 queues=queus.concat(anim_data.gene.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"}));)
+	 queues=queues.concat(anim_data.genes.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"})));
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
