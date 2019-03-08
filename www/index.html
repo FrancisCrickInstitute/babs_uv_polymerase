@@ -220,8 +220,8 @@
 	     .attr("cy", d => d.y)
 	     .attr("cx", d => d.x);
 	 cartoon.selectAll("rect")
-	     .attr("class", function(d, i) {
-		 return (cartoon_data.pols[cartoon_ind].time>cartoon_data.repair[i])?"repaired_damage":"active_damage";});
+		.attr("class", function(d, i) {
+		    return (cartoon_data.pols[cartoon_ind].time>cartoon_data.repair[i])?"repaired_damage":"active_damage";});
 	 d3.select("#time_slider").property("value", cartoon_ind);
      }
 
@@ -236,6 +236,8 @@
 	 if (is_capturing) {
 	     d3.select("#scenarios").selectAll("svg")
 	       .each(record_frame);
+	     d3.select("#genes").selectAll("svg")
+	       .each(record_frame);
 	 }
 	 d3.select("#genes").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
@@ -246,7 +248,7 @@
      /* Functions for creating webms */
      var queues;
      function record_frame(d,i) {
-	 queues[i].defer(drawFrame, this);
+	 queues.find(q => q.name==d.name.Value).q.defer(drawFrame, this);
      }
      function drawFrame(svg, cb) {
 	 var oDOM = svg.cloneNode(true);
@@ -287,7 +289,8 @@
      }
      function generate_webms() {
 	 d3.selectAll(".download_movies").remove();
-	 queues.forEach(function(queue, which_queue) {
+	 queues.forEach(function(queue_obj) {
+	     var queue=queue_obj.q;
 	     var canvas4webm = document.createElement("canvas");
 	     canvas4webm.width = width + margin.left + margin.right;
 	     canvas4webm.height = height + margin.top + margin.bottom;
@@ -306,17 +309,22 @@
 		   .append("li")
 		   .append("a")
 		   .attr("href", url)
-		   .attr("download", anim_data.scenarios[which_queue].name.Value + ".webm")
-		   .text("Movie for scenario " + anim_data.scenarios[which_queue].name.Value);
+		   .attr("download", queue_obj.name + ".webm")
+		   .text("Movie for " +queue_obj.section + " " + queue_obj.name);
 	     };
 	     queue.awaitAll(function(err, frames){
+		 var reps=0;
 		 recorder.start();
 		 drawFrame();
 		 function drawFrame() {
 		     if (frames.length) {
-			 context4webm.clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
-			 context4webm.drawImage(frames.shift(), 0, 0,
-						width + margin.left + margin.right,height + margin.top + margin.bottom);
+			 if (reps==0) {
+			     context4webm.clearRect(0,0,width + margin.left + margin.right,height + margin.top + margin.bottom);
+			     context4webm.drawImage(frames.shift(), 0, 0,
+						    width + margin.left + margin.right,height + margin.top + margin.bottom);
+			     reps=5;
+			 }
+			 reps=reps-1;
 			 requestAnimationFrame(drawFrame);
 		     } else {
 			 recorder.stop();
@@ -412,10 +420,10 @@
 	 var d1=node.selectAll("div.dropdown").data([1])
 		    .enter().append("div").attr("class","dropdown");
 	 d1.append("button")
-		    .attr("class","btn btn-secondary dropdown-toggle")
-		    .attr("type","button")
-		    .attr("data-toggle","dropdown")
-		    .text("New Parameter");
+	   .attr("class","btn btn-secondary dropdown-toggle")
+	   .attr("type","button")
+	   .attr("data-toggle","dropdown")
+	   .text("New Parameter");
 	 var d2=d1.append("div")
 		  .attr("class","dropdown-menu");
 	 d2.selectAll("a")
@@ -678,7 +686,7 @@
 	      .merge(cards)
 	      .call(update_card, anim_data.data, anim_data.genes);
 	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
-	 queues=anim_data.scenarios.map(scen => d3.queue(1));
+	 queues=anim_data.scenarios.map(scen =>( {name:scen.name.Value, q:d3.queue(1), section:"scenario"}));
 	 // Gene Cards
 	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
 		   .data(anim_data.genes, d => d.name.Value);
@@ -688,6 +696,7 @@
 	      .merge(cards)
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
 	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
+	 queues=queus.concat(anim_data.gene.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"}));)
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
 		 update_movies(movie_ind);
