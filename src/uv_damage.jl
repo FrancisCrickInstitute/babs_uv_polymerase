@@ -11,7 +11,7 @@ using Pages#master
 using HTTP
 
 
-include("cell_settings.jl")
+include("private_cell_settings.jl")
 include("types.jl")
 include("event_handlers.jl")
 include("time_calculators.jl")
