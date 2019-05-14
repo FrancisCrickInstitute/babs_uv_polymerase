@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             when {
-                branch 'master'
+                branch 'melbourne'
             }
             steps {
                 script {
@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Push Docker Image') {
             when {
-                branch 'master'
+                branch 'melbourne'
             }
             steps {
                 script {
@@ -36,7 +36,7 @@ pipeline {
         }
         stage('Deploy To Staging Environment') {
             when {
-                branch 'master'
+                branch 'melbourne'
             }
             steps {
 
