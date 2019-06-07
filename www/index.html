@@ -699,6 +699,9 @@
 	 queues=queues.concat(anim_data.genes.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"})));
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
+		 if (typeof movie_timer !== 'undefined') {
+		     movie_timer.stop();
+		 }
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
 		 if (is_capturing && (movie_ind==0)) { // ie we've done a complete video loop
