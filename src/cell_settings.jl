@@ -15,17 +15,17 @@ const vars = Dict{String, Any}(
     "Type"       => 0,
     "gene_length"       => 63kb,
     "initiation_period" => 2.5seconds,
-    "uv_distance"       => 10kb,
+    "uv_distance"       => 20kb,
     "run_length"        => 240minutes,
     "pol_speed"         => 2000bp/minutes,
     "pol_size"          => 33.0bp,
     "repair_half_life"  => 4hours,
-    "processivity"      => 1hours,
-    "removal"       => 10.0minutes,
+    "processivity"      => 2hours,
+    "removal"       => 1hours,
     "pause_site"        => 60bp,
     "release_time"      => 3seconds,
     "speed_factor_t0"   => 1.0, # Factor by which speed changes upon damagage
-    "pol_N"             => 20000, # Number of polymerases available initially for initiation
+    "pol_N"             => 250, # Number of polymerases available initially for initiation
     "complete_reuse_p"  => 1, # Probability of transcript-complete pol re-entering pool
     "dropoff_reuse_p"   => 1, # Probability of incomplete-transcript pol re-entering pool
     "genome_prop"         => 1,
@@ -60,10 +60,8 @@ const var_units = Dict{String, String}(
 )
 
 const scenarios = [
-    Dict("name"=>"recycle", "pol_N" => 1000, "colour" => "#006400"),
-    Dict("name"=>"degrad", "pol_N" => 1000, "dropoff_reuse_p" => 0.1, "colour" => "#8b0000"),
-    Dict("name"=>"stall", "pol_N" => 1000,  "colour" => "#fa8072", "removal" => Inf),
-    Dict("name"=>"nodamage", "pol_N" => 1000,  "colour" => "#0000ff", "uv_distance" => Inf,"removal" => Inf),
+    Dict("name"=>"no_degrad",  "dropoff_reuse_p" => 1, "colour" => "#ffc000"),
+    Dict("name"=>"degrad",  "dropoff_reuse_p" => 0.3, "colour" => "#5b9bd5")
 ]
 
 
