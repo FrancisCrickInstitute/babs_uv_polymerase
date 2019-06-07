@@ -369,10 +369,12 @@
 	 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;});
      }
      function show_form(node, data) {
-	 var rows = node.selectAll('div')
-			.data(data, d => d.key)
-			.enter().filter(d => d.value.Unit!="NA" & d.key!="name" & d.key!="colour")
-			.append('div').attr("class", "row");
+	 var all_rows = node.selectAll('div')
+			    .data(data, d => d.key);
+	 all_rows.exit().remove();
+	 var rows = all_rows
+	     .enter().filter(d => d.value.Unit!="NA" & d.key!="name" & d.key!="colour")
+	     .append('div').attr("class", "row");
 	 rows.append('label')
 	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
@@ -439,11 +441,19 @@
 	 // myobj[d.key]=d.value;
 	 if (d3.select(this).classed("scenario")) {
 	     form_rows= d3.select("#scene-cards").selectAll("div.card-wrap").selectAll("form");
-	     anim_data.scenarios = anim_data.scenarios.map(sc => Object.assign(sc,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     if (d.key in anim_data.scenarios[0]) {
+		 anim_data.scenarios.forEach(sc => delete(sc[d.key]));
+	     } else {
+		 anim_data.scenarios = anim_data.scenarios.map(sc => Object.assign(sc,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     }
 	     show_form(form_rows,(d2,i) => d3.entries(anim_data.scenarios[i]));
 	 } else {
 	     form_rows= d3.select("#gene-cards").selectAll("div.card-wrap").selectAll("form");
-	     anim_data.genes = anim_data.genes.map(g => Object.assign(g,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     if (d.key in anim_data.genes[0]) {
+		 anim_data.scenarios.forEach(g => delete(g[d.key]));
+	     } else {
+		 anim_data.genes = anim_data.genes.map(g => Object.assign(g,{[d.key]:{Value:d.value.Value, Unit:d.value.Unit}}));
+	     }
 	     show_form(form_rows,(d2,i) => d3.entries(anim_data.genes[i]));
 	 }
      }
