@@ -233,15 +233,15 @@
 	 d3.select("#scenarios").selectAll("svg")
 	   .selectAll("path.pol_path").filter(d => ti<d.length)
 	   .attr("d",d => valueline(d[ti]));
+	 d3.select("#genes").selectAll("svg")
+	   .selectAll("path.pol_path").filter(d => ti<d.length)
+	   .attr("d", d => valueline(d[ti]));
 	 if (is_capturing) {
 	     d3.select("#scenarios").selectAll("svg")
 	       .each(record_frame);
 	     d3.select("#genes").selectAll("svg")
 	       .each(record_frame);
 	 }
-	 d3.select("#genes").selectAll("svg")
-	   .selectAll("path.pol_path").filter(d => ti<d.length)
-	   .attr("d", d => valueline(d[ti]));
 	 d3.selectAll('.movie_timer').text(format_hms(ti*tscale));
      }
 
@@ -660,6 +660,13 @@
      
      d3.json("anim_file.json").then(show_movies);
      function show_movies(anim) {
+	 if (typeof movie_timer !== 'undefined') {
+	     movie_timer.stop();
+	 }
+	 if (typeof cartoon_timer !== 'undefined') {
+	     cartoon_timer.stop();
+	 }
+
 	 if (typeof anim !== "undefined") {
 	     anim_data=anim;
 	     if (anim.hasOwnProperty('history')) {
@@ -709,9 +716,6 @@
 	 queues=queues.concat(anim_data.genes.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"})));
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
-		 if (typeof movie_timer !== 'undefined') {
-		     movie_timer.stop();
-		 }
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
 		 if (is_capturing && (movie_ind==0)) { // ie we've done a complete video loop
