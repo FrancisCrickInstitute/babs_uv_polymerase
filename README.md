@@ -98,4 +98,9 @@ Once the package is cloned, a Dockerfile is available to start a web
 front-end that allows the user to interact with the settings of the
 simulation and to view the results.
 
+## Availability
+We currently have the following instances available for interactively
+using the simulator:
+* [Francis Crick Institute](http://51.145.52.51:8000/uv_damage)
+
 ## Usage
