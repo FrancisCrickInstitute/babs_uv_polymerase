@@ -60,15 +60,16 @@ const var_units = Dict{String, String}(
 )
 
 const scenarios = [
-    Dict("name"=>"no_degrad",  "dropoff_reuse_p" => 1, "colour" => "#ffc000"),
-    Dict("name"=>"degrad",  "dropoff_reuse_p" => 0.3, "colour" => "#5b9bd5")
+    Dict("name"=>"no_degrad", "dropoff_reuse_p" => vars["dropoff_reuse_p"], "removal" => vars["removal"], "colour" => "#ffc000"),
+    Dict("name"=>"degrad",    "dropoff_reuse_p" => 0.3,                     "removal" => vars["removal"], "colour" => "#5b9bd5"),
+    Dict("name"=>"pileup",    "dropoff_reuse_p" => vars["dropoff_reuse_p"], "removal" => Inf            , "colour" => "#232b2b")
 ]
 
 
 const cell = [
-    Dict("name"=>"Long", "gene_length" => 100kb, "genome_prop" => 0.10, "colour" => "#0000ff"),
-    Dict("name"=>"Medium", "gene_length" => 63kb, "genome_prop" => 0.20, "colour" => "#006400"),
-    Dict("name"=>"Short", "gene_length" => 5kb, "genome_prop" => 0.70, "colour" => "#8b0000")
+    Dict("name"=>"Long",   "gene_length" => 100kb, "genome_prop" => 0.10, "colour" => "#0000ff"),
+    Dict("name"=>"Medium", "gene_length" => 63kb,  "genome_prop" => 0.20, "colour" => "#006400"),
+    Dict("name"=>"Short",  "gene_length" => 5kb,   "genome_prop" => 0.70, "colour" => "#8b0000")
 ]
 
 

@@ -384,7 +384,7 @@
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
 	     .attr("value", d=>d.value.Value)
-	     .on("input", function(d,i){d.value.Value=+this.value;});
+	     .on("input", function(d,i){d.value.Value = (this.value==null)?null:+this.value;});
 	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
 	     .text(d=> d.value.Unit);
      }
