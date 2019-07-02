@@ -370,23 +370,23 @@
      }
      function show_form(node, data) {
 	 var all_rows = node.selectAll('div')
-			    .data(data, d => d.key);
+			    .data(keys(data));
 	 all_rows.exit().remove();
 	 var rows = all_rows
-	     .enter().filter(d => d.value.Unit!="NA" & d.key!="name" & d.key!="colour")
+	     .enter().filter(d => data[d].Unit!="NA" & d!="name" & d!="colour")
 	     .append('div').attr("class", "row");
 	 rows.append('label')
 	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
 	     .text(label)
 	     .attr("title",tooltip);
-	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
-	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
+	 rows.filter(d => data[d].Unit.includes("|")).each(add_radio);
+	 rows.filter(d => !data[d].Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
-	     .attr("value", d=>d.value.Value)
-	     .on("input", function(d,i){d.value.Value = (this.value==null)?null:+this.value;});
-	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
-	     .text(d=> d.value.Unit);
+	     .attr("value", d=>data[d].Value)
+	     .on("input", function(d,i){data[d].Value = (this.value==null)?null:+this.value;});
+	 rows.filter(d => !data[d].Unit.includes("|")).append("span")
+	     .text(d=> data[d].Unit);
      }
      function recalculate() {
 	 cartoon_timer.stop();
