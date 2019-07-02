@@ -125,6 +125,28 @@
 		       .curve(d3.curveBasis);
      var tscale;
      var anim_data;
+     function ui_order(data) {
+	 var UI_order = ["initiation_period",
+			 "pol_N",
+			 "pause_site",
+			 "release_time",
+			 "pol_speed",
+			 "pol_size",
+			 "processivity",
+			 "uv_distance",
+			 "repair_half_life",
+			 "removal",
+			 "dropoff_reuse_p",
+			 "gene_length",
+			 "complete_reuse_p",
+			 "run_length",
+			 "genome_prop",
+			 "speed_factor_t0",
+			 "tally_binsize",
+			 "tally_interval"
+	 ];
+	 return d3.entries(data).sort( (a,b) =>  UI_order.indexOf(a.key) - UI_order.indexOf(b.key));
+     }
      function label(k) {
 	 var UI_names = {gene_length:"Gene Length",
 			 initiation_period:"Init. Period",
@@ -254,8 +276,8 @@
 	 var oDOM = svg.cloneNode(true);
 	 read_Element(oDOM, svg);
 	 var img = new Image(),
-             serialized = new XMLSerializer().serializeToString(oDOM),
-             url = URL.createObjectURL(new Blob([serialized], {type: "image/svg+xml"}));
+	     serialized = new XMLSerializer().serializeToString(oDOM),
+	     url = URL.createObjectURL(new Blob([serialized], {type: "image/svg+xml"}));
 	 img.onload = function(){
 	     cb(null, img); //signals to queuer that 'img' is to be pushed onto queue
 	 };
@@ -370,23 +392,23 @@
      }
      function show_form(node, data) {
 	 var all_rows = node.selectAll('div')
-			    .data(keys(data));
+			    .data(data, d => d.key);
 	 all_rows.exit().remove();
 	 var rows = all_rows
-	     .enter().filter(d => data[d].Unit!="NA" & d!="name" & d!="colour")
+	     .enter().filter(d => d.value.Unit!="NA" & d.key!="name" & d.key!="colour")
 	     .append('div').attr("class", "row");
 	 rows.append('label')
 	     .attr("class", "col-4 col-form-label")
 	     .style("text-align","right")
 	     .text(label)
 	     .attr("title",tooltip);
-	 rows.filter(d => data[d].Unit.includes("|")).each(add_radio);
-	 rows.filter(d => !data[d].Unit.includes("|")).append("input")
+	 rows.filter(d => d.value.Unit.includes("|")).each(add_radio);
+	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
-	     .attr("value", d=>data[d].Value)
-	     .on("input", function(d,i){data[d].Value = (this.value==null)?null:+this.value;});
-	 rows.filter(d => !data[d].Unit.includes("|")).append("span")
-	     .text(d=> data[d].Unit);
+	     .attr("value", d=>d.value.Value)
+	     .on("input", function(d,i){d.value.Value = (this.value==null)?null:+this.value;});
+	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
+	     .text(d=> d.value.Unit);
      }
      function recalculate() {
 	 cartoon_timer.stop();
@@ -684,7 +706,7 @@
 		 d3.json("test.json").then(load_cartoon);
 	     }
 	 }
-	 show_form(d3.select("#params_form"), d3.entries(anim_data.default));
+	 show_form(d3.select("#params_form"), ui_order(anim_data.default));
 	 show_summary_movie();
 	 var maxy=anim_data.data.map(z => z.map(y => y.map(x => x.reduce(maxer)).reduce(maxer)).reduce(maxer)).reduce(maxer);
 	 var maxx = anim_data.data.map(y => y.map(x => x[1].length).reduce(maxer)).reduce(maxer)
@@ -702,7 +724,7 @@
 	      .call(build_new_card)
 	      .merge(cards)
 	      .call(update_card, anim_data.data, anim_data.genes);
-	 build_dropdown(d3.select("#scene-footer"),d3.entries(anim_data.default), "scenario");
+	 build_dropdown(d3.select("#scene-footer"),ui_order(anim_data.default), "scenario");
 	 queues=anim_data.scenarios.map(scen =>( {name:scen.name.Value, q:d3.queue(1), section:"scenario"}));
 	 // Gene Cards
 	 cards = d3.select("#gene-cards").selectAll("div.card-wrap")
@@ -712,7 +734,7 @@
 	      .call(build_new_card)
 	      .merge(cards)
 	      .call(update_card, d3.transpose(anim_data.data), anim_data.scenarios);
-	 build_dropdown(d3.select("#gene-footer"),d3.entries(anim_data.default), "gene");
+	 build_dropdown(d3.select("#gene-footer"),ui_order(anim_data.default), "gene");
 	 queues=queues.concat(anim_data.genes.map(g =>( {name:g.name.Value, q:d3.queue(1), section:"gene"})));
 	 movie_timer=d3.interval(function() {
 	     if (d3.select("#pauser").property("checked")) {
