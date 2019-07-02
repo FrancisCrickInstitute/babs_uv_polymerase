@@ -57,8 +57,10 @@ function add_pol!(gene::Gene; pos=1.0, speed=gene.default_speed)
     push!(gene.pol_state, "active")
     gene.next_id += 1
     push!(gene.pol_id, gene.next_id)
+    removal_t = 1/(1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"])
     push!(gene.events.processivity.time, random_time(gene.vars["processivity"])[1])
-    push!(gene.events.removal.time, random_time(gene.vars["removal"])[1])
+    #    push!(gene.events.removal.time, random_time(gene.vars["removal"])[1])
+    push!(gene.events.removal.time, random_time(removal_t)[1])
     gene.freedPols=-1
     return(nothing)
 end

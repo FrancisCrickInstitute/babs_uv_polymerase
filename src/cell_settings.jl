@@ -21,13 +21,14 @@ const vars = Dict{String, Any}(
     "pol_size"          => 33.0bp,
     "repair_half_life"  => 4hours,
     "processivity"      => 2hours,
-    "removal"       => 10minutes,
+    "dissoc"            => 10minutes,
+    "degrad"            => Inf,
     "pause_site"        => 60bp,
     "release_time"      => 3seconds,
     "speed_factor_t0"   => 1.0, # Factor by which speed changes upon damagage
     "pol_N"             => 250, # Number of polymerases available initially for initiation
     "complete_reuse_p"  => 1, # Probability of transcript-complete pol re-entering pool
-    "dropoff_reuse_p"   => 1, # Probability of incomplete-transcript pol re-entering pool
+#    "dropoff_reuse_p"   => 1, # Probability of incomplete-transcript pol re-entering pool
     "genome_prop"         => 1,
     "tally_interval"     => 3minutes,
     "tally_binsize"      => 1kb,
@@ -44,13 +45,14 @@ const var_units = Dict{String, String}(
     "pol_size"          => "bp",
     "repair_half_life"  => "s",
     "processivity"      => "s",
-    "removal"           => "s",
+    "dissoc"            => "s",
+    "degrad"            => "s",
     "pause_site"        => "bp",
     "release_time"      => "s",
     "speed_factor_t0"   => "", 
     "pol_N"             => "", 
     "complete_reuse_p"  => "", 
-    "dropoff_reuse_p"   => "", 
+#    "dropoff_reuse_p"   => "", 
     "genome_prop"         => "",
     "tally_interval"     => "NA",
     "tally_binsize"      => "NA",
@@ -60,9 +62,9 @@ const var_units = Dict{String, String}(
 )
 
 const scenarios = [
-    Dict("name"=>"no_degrad", "dropoff_reuse_p" => vars["dropoff_reuse_p"], "removal" => vars["removal"], "colour" => "#ffc000"),
-    Dict("name"=>"degrad",    "dropoff_reuse_p" => 0.3,                     "removal" => vars["removal"], "colour" => "#5b9bd5"),
-    Dict("name"=>"pileup",    "dropoff_reuse_p" => vars["dropoff_reuse_p"], "removal" => Inf            , "colour" => "#232b2b")
+    Dict("name"=>"no_degrad", "degrad" => vars["degrad"], "dissoc" => vars["dissoc"], "colour" => "#ffc000"),
+    Dict("name"=>"degrad",    "degrad" => 14minutes,      "dissoc" => 33minutes,      "colour" => "#5b9bd5"),
+    Dict("name"=>"pileup",    "degrad" => Inf,            "dissoc" => Inf,            "colour" => "#232b2b")
 ]
 
 
