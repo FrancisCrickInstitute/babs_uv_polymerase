@@ -86,15 +86,28 @@ function processivity(gene::Gene, event::indexed_event, elapsed::Float64)
     end
     update_speeds!(gene, ind)
 #    remove_pol!(gene, ind, prob=gene.vars["dropoff_reuse_p"])
-    p_reuse = (1/(gene.vars["dissoc"])) / (1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
-    remove_pol!(gene, ind, prob=p_reuse)
+#    p_reuse = (1/(gene.vars["dissoc"])) / (1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
+    remove_pol!(gene, ind, prob=1)
     return(nothing)
 end
 
 
 
 # *** Removal - same as processivity
-removal = processivity
+function removal(gene::Gene, event::indexed_event, elapsed::Float64)
+    ind = argmin(event.time)
+    move_pols!(gene, elapsed)
+    if gene.pol_state[ind] == "paused"
+        gene.events.release.time[1] = Inf
+        gene.events.pause.time[1] = Inf
+    end
+    update_speeds!(gene, ind)
+#    remove_pol!(gene, ind, prob=gene.vars["dropoff_reuse_p"])
+    p_reuse = (1/(gene.vars["dissoc"])) / (1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
+    remove_pol!(gene, ind, prob=p_reuse)
+    return(nothing)
+end
+
 
 
 # *** Complete - remove pol, and record completion event
