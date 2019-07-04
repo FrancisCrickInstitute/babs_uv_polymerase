@@ -130,8 +130,8 @@ end
 
 function main(req::String)
     params=JSON.parse(req)
-    if (haskey(params, "bookmark")) 
-        if (params["bookmark"]=="")) 
+    if haskey(params, "bookmark") 
+        if params["bookmark"]==""
             var bookmark=randstring(12)
             bookmarks[bookmark]=req
             return("{bookmark: \"" * bookmark * "\"}")
