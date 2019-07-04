@@ -130,18 +130,18 @@ end
 
 function main(req::String)
     params=JSON.parse(req)
-    if (haskey(params, "bookmark")) {
-        if (params["bookmark"]=="")) {
+    if (haskey(params, "bookmark")) 
+        if (params["bookmark"]=="")) 
             var bookmark=randstring(12)
             bookmarks[bookmark]=req
             return("{bookmark: \"" * bookmark * "\"}")
-        } else {
+        else
             retrieved=JSON.parse(bookmarks[params["bookmark"]])
             main(json_inf(retrieved["scenarios"]), json_inf(retrieved["genes"]), json_inf(retrieved["default"]), client_id=params["id"])
-        }
-    } else {
+        end
+    else
         main(json_inf(params["scenarios"]), json_inf(params["genes"]), json_inf(params["default"]), client_id=params["id"])
-    }
+    end
 end
 
 function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, Any},1}, vars::Dict{String, Any}; client_id="")
