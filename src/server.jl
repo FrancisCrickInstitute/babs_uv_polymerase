@@ -15,5 +15,8 @@ function start_server()
     Endpoint("/recalculate.json", POST) do request::HTTP.Request
         response = main(String(request.body))
     end
+    Endpoint("/get_bookmark.json", POST) do request::HTTP.Request
+        response = main(String(request.body))
+    end
     Pages.start();
 end

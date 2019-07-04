@@ -88,6 +88,8 @@
 	  <button  onclick="recalculate()" type="button" class="btn btn-primary">Recalculate</button>
 	  <a id="download_csv" style="display:none" >Download polymerase stats</a>
 	  <ul id="download_movies"</ul>
+	  <button  onclick="get_bookmark()" type="button" class="btn btn-primary">Get Bookmark</button>
+	  <span id="bookmark_url"></span>
 	</div>
 	<div id="progress"></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
@@ -413,11 +415,22 @@
      function recalculate() {
 	 cartoon_timer.stop();
 	 movie_timer.stop();
+	 document.getElementByID("bookmark_url").textContent("");
 	 d3.json("recalculate.json", {
 	     method: "POST",
 	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
 	     headers: {"Content-type": "application/json; charset=UTF-8"}
 	 }).then(show_movies);
+     }
+     function get_bookmark() {
+	 d3.json("get_bookmark.json", {
+	     method: "POST",
+	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id, "bookmark":""}),
+	     headers: {"Content-type": "application/json; charset=UTF-8"}
+	 }).then(show_bookmark);
+     }
+     function show_bookmark(bookmark) {
+	 document.getElementByID("bookmark_url").textContent(window.location.href.split('?')[0] + "?bookmark=" + bookmark.bookmark);
      }
      function progress(task, n) {
 	 d3.select("#progress").text(task + ": " +  n + "/100");
@@ -677,10 +690,17 @@
 	     }
 	 }
      }
-
      
-     
-     d3.json("anim_file.json").then(show_movies);
+     var urlParams = new URLSearchParams(window.location.search);
+     if (urlParams.get("bookmark")==null) {
+	 d3.json("anim_file.json").then(show_movies); 
+     } else {
+	 d3.json("recalculate.json", {
+	     method: "POST",
+	     body: JSON.stringify({"bookmark":urlParams.get("bookmark"), "id":Pages.id}),
+	     headers: {"Content-type": "application/json; charset=UTF-8"}
+	 }).then(show_movies);
+     }
      function show_movies(anim) {
 	 if (typeof movie_timer !== 'undefined') {
 	     movie_timer.stop();

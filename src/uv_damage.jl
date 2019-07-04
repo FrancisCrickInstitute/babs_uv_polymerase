@@ -122,13 +122,26 @@ end
 
 
 # ** Run Simulations
+bookmarks = Dict{String, String}
+
 function main()
     main(scenarios, cell, vars)
 end    
 
 function main(req::String)
     params=JSON.parse(req)
-    main(json_inf(params["scenarios"]), json_inf(params["genes"]), json_inf(params["default"]), client_id=params["id"])
+    if (haskey(params, "bookmark")) {
+        if (params["bookmark"]=="")) {
+            var bookmark=randstring(12)
+            bookmarks[bookmark]=req
+            return("{bookmark: \"" * bookmark * "\"}")
+        } else {
+            retrieved=JSON.parse(bookmarks[params["bookmark"]])
+            main(json_inf(retrieved["scenarios"]), json_inf(retrieved["genes"]), json_inf(retrieved["default"]), client_id=params["id"])
+        }
+    } else {
+        main(json_inf(params["scenarios"]), json_inf(params["genes"]), json_inf(params["default"]), client_id=params["id"])
+    }
 end
 
 function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, Any},1}, vars::Dict{String, Any}; client_id="")
