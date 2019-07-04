@@ -430,7 +430,7 @@
 	 }).then(show_bookmark);
      }
      function show_bookmark(bookmark) {
-	 document.getElementByID("bookmark_url").textContent(window.location.href.split('?')[0] + "?bookmark=" + bookmark.bookmark);
+	 document.getElementByID("bookmark_url").textContent=window.location.href.split('?')[0] + "?bookmark=" + bookmark.bookmark;
      }
      function progress(task, n) {
 	 d3.select("#progress").text(task + ": " +  n + "/100");
@@ -690,8 +690,8 @@
 	     }
 	 }
      }
-     
-     var urlParams = new URLSearchParams(window.location.search);
+
+      var urlParams = new URLSearchParams(window.location.search);
      if (urlParams.get("bookmark")==null) {
 	 d3.json("anim_file.json").then(show_movies); 
      } else {

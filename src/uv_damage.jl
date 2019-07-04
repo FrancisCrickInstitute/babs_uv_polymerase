@@ -134,7 +134,7 @@ function main(req::String)
         if params["bookmark"]==""
             bookmark=randstring(12)
             bookmarks[bookmark]=req
-            return("{bookmark: \"" * bookmark * "\"}")
+            return("{\"bookmark\": \"" * bookmark * "\"}")
         else
             retrieved=JSON.parse(bookmarks[params["bookmark"]])
             main(json_inf(retrieved["scenarios"]), json_inf(retrieved["genes"]), json_inf(retrieved["default"]), client_id=params["id"])
