@@ -6,6 +6,9 @@ function start_server()
     Endpoint("/uv_damage") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/index.html"),String)
     end
+    Endpoint("/favicon.ico") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/favicon-wrench.ico"),String)
+    end
     Endpoint("/anim_file.json") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/anim_file.json"),String)
     end
