@@ -129,6 +129,8 @@ function main()
 end    
 
 function main(req::String)
+    print(req, "\n")
+    print(bookmarks,  "\n")
     params=JSON.parse(req)
     if haskey(params, "bookmark") 
         if params["bookmark"]==""
