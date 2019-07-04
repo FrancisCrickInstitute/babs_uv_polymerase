@@ -122,7 +122,7 @@ end
 
 
 # ** Run Simulations
-bookmarks = Dict{String, String}
+bookmarks = Dict{String, String}()
 
 function main()
     main(scenarios, cell, vars)
