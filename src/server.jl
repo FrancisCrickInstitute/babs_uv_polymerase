@@ -24,11 +24,11 @@ function start_server()
     Endpoint("/tour.js") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/tour.js"),String)
     end
-    Endpoint("/bootstrap-tourist.min.js") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.min.js"),String)
+    Endpoint("/bootstrap-tourist.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.js"),String)
     end
-    Endpoint("/bootstrap-tourist.min.css") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.min.css"),String)
+    Endpoint("/bootstrap-tourist.css") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.css"),String)
     end
 
     Pages.start();
