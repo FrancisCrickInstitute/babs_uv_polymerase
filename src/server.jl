@@ -22,13 +22,13 @@ function start_server()
         response = main(String(request.body))
     end
     Endpoint("/tour.js") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/tour.js",String)
+        read(joinpath(@__DIR__, "../www/tour.js"),String)
     end
     Endpoint("/bootstrap-tour.min.js") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/lib/bootstrap-tour.min.js",String)
+        read(joinpath(@__DIR__, "../www/lib/bootstrap-tour.min.js"),String)
     end
     Endpoint("/bootstrap-tour.min.css") do request::HTTP.Request
-        read(joinpath(@__DIR__, "../www/lib/bootstrap-tour.min.css",String)
+        read(joinpath(@__DIR__, "../www/lib/bootstrap-tour.min.css"),String)
     end
 
     Pages.start();
