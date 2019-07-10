@@ -14,11 +14,7 @@ var tour = new Tour({
 	{
 	    element: "#cartoon",
 	    title: "Cartoon of example gene",
-	    content: "Here we see a single simulation of the polymerases running along a specific gene. As the gene is so long, we have to wrap it starting from top
-left to bottom right.  Damage sites are highlighted in red, and repaired sites in green.  As time progresses, polymerases are introduced and depending on the way the 
-simulation has been set up, they encounter damage sites and start to queue up.  These stalled polymerases can be removed either by dissociation (in which case they are 
-available for initiation again) or degraded - in either case, their exit is visualised by their falling to the bottom of the animation. Moving polymerases are also subject to
-removal from the gene body by processivity.",
+	    content: "Here we see a single simulation of the polymerases running along a specific gene. As the gene is so long, we have to wrap it starting from top left to bottom right.  Damage sites are highlighted in red, and repaired sites in green.  As time progresses, polymerases are introduced and depending on the way the simulation has been set up, they encounter damage sites and start to queue up.  These stalled polymerases can be removed either by dissociation (in which case they are available for initiation again) or degraded - in either case, their exit is visualised by their falling to the bottom of the animation. Moving polymerases are also subject to removal from the gene body by processivity.",
 	    placement: "right"
 	},
 	{
@@ -30,9 +26,7 @@ removal from the gene body by processivity.",
 	{
 	    element: "#movie",
 	    title: "All polymerase densities",
-	    content: "Here we aggregate over many random simulations, as damage sites and repair times will vary between cells.  To speed up download times, we only present
-the data every three minutes according to 'cell time'.  The colours represent the different scenarios, and all gene-lengths are presented together - we'll see later on how to 
-separate these out"
+	    content: "Here we aggregate over many random simulations, as damage sites and repair times will vary between cells.  To speed up download times, we only present the data every three minutes according to 'cell time'.  The colours represent the different scenarios, and all gene-lengths are presented together - we'll see later on how to separate these out"
 	    placement: "right"
 	},
 	{
@@ -44,8 +38,7 @@ separate these out"
 	{
 	    element: "#params_form",
 	    title: "Global settings",
-	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief
-description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank."
+	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank."
 	    placement: "right"
 	},
 	{
@@ -58,8 +51,7 @@ description of what effect it will have. If you want any of the durations to be 
 	{
 	    element: "#scene_cards:first-child",
 	    title: "Scenarios",
-	    content: "Here is a specific scenario. You can change the label by clicking on the 'no_degrad' text; change the colour using the selector to the left; remove the scenario
-by clicking on the 'x' icon; add a new scenario by the button at the bottom left of the page.",
+	    content: "Here is a specific scenario. You can change the label by clicking on the 'no_degrad' text; change the colour using the selector to the left; remove the scenario by clicking on the 'x' icon; add a new scenario by the button at the bottom left of the page.",
 	    placement: "right"
 	},
 	{
@@ -71,8 +63,7 @@ by clicking on the 'x' icon; add a new scenario by the button at the bottom left
 	{
 	    element: "#scene-footer div ",
 	    title: "Scenario parameters",
-	    content: "Here you can select which parameters distinguish the scenarios: click one that already distinguishes scenarios removes it, so it's takes the default value across all scenarios; click a new one
-allows you then to tune it for each scenario indivually",
+	    content: "Here you can select which parameters distinguish the scenarios: click one that already distinguishes scenarios removes it, so it's takes the default value across all scenarios; click a new one allows you then to tune it for each scenario indivually",
 	    placement: "right"
 	},
 	{
@@ -84,8 +75,7 @@ allows you then to tune it for each scenario indivually",
 	},
 	{
 	    element: "#gene_cards:first-child",
-	    title: "Genes",
-	    content: "Here is a specific gene. These will operate in the same cell, and compete for polymerases. This is typically to allow multiple gene lengths, but heterogeneity between genes in the same cell could be modelled here.  You can weight their presence by using the 'Proportion in genome' parameter.",
+	    title: "Genes", content: "Here is a specific gene. These will operate in the same cell, and compete for polymerases. This is typically to allow multiple gene lengths, but heterogeneity between genes in the same cell could be modelled here.  You can weight their presence by using the 'Proportion in genome' parameter.",
 	    placement: "right"
 	},
 	{
@@ -98,8 +88,7 @@ allows you then to tune it for each scenario indivually",
 	{
 	    element: "#recalculate button",
 	    title: "Run Simulation",
-	    content: "This button will send the parameters back to the server to run the simulation.  It may take quite a while: each scenario is simulated in turn, and a counter should progress to 100 for each. Once
-completed, the animations on the previous tabs will be rebuilt, and this page will refresh with the ability to download overall stats and movie files for the simulation",
+	    content: "This button will send the parameters back to the server to run the simulation.  It may take quite a while: each scenario is simulated in turn, and a counter should progress to 100 for each. Once completed, the animations on the previous tabs will be rebuilt, and this page will refresh with the ability to download overall stats and movie files for the simulation",
 	    placement: "right"
 	},
 	{
