@@ -4,6 +4,7 @@ var tour = new Tour({
     smartPlacement: true,
     keyboard: true,
     storage: false,
+    framework: "bootstrap4",
     steps: [
 	{
 	    element: "#main_tab",
@@ -26,19 +27,19 @@ var tour = new Tour({
 	{
 	    element: "#movie",
 	    title: "All polymerase densities",
-	    content: "Here we aggregate over many random simulations, as damage sites and repair times will vary between cells.  To speed up download times, we only present the data every three minutes according to 'cell time'.  The colours represent the different scenarios, and all gene-lengths are presented together - we'll see later on how to separate these out"
+	    content: "Here we aggregate over many random simulations, as damage sites and repair times will vary between cells.  To speed up download times, we only present the data every three minutes according to 'cell time'.  The colours represent the different scenarios, and all gene-lengths are presented together - we'll see later on how to separate these out",
 	    placement: "right"
 	},
 	{
 	    element: "#repair_stats_table",
 	    title: "Repair stats",
-	    content: "Here's a summary of the locations of the repair sites, and how long they'll take to be repaired, for the specific cartoon show at the top"
+	    content: "Here's a summary of the locations of the repair sites, and how long they'll take to be repaired, for the specific cartoon show at the top",
 	    placement: "right"
 	},
 	{
 	    element: "#params_form",
 	    title: "Global settings",
-	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank."
+	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank.",
 	    placement: "right"
 	},
 	{
@@ -69,7 +70,7 @@ var tour = new Tour({
 	{
 	    element: "#genes_tab",
 	    title: "Genes",
-	    content: "Click on this tab to allow multiple genes to exist in the same cell."
+	    content: "Click on this tab to allow multiple genes to exist in the same cell.",
 	    reflex: true, 
 	    placement: "right"
 	},
@@ -98,4 +99,5 @@ var tour = new Tour({
 	    placement: "right"
 	}
     ]
-};
+});
+
