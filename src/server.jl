@@ -24,12 +24,30 @@ function start_server()
     Endpoint("/tour.js") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/tour.js"),String)
     end
+    # local copies of external libraries
     Endpoint("/bootstrap-tourist.js") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.js"),String)
     end
     Endpoint("/bootstrap-tourist.css") do request::HTTP.Request
         read(joinpath(@__DIR__, "../www/lib/bootstrap-tourist.css"),String)
     end
-
+    Endpoint("/jquery-3.4.1.min.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/jquery-3.4.1.min.js"),String)
+    end
+    Endpoint("/popper.min.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/popper.min.js"),String)
+    end
+    Endpoint("/bootstrap.min.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/bootstrap.min.js"),String)
+    end
+    Endpoint("/bootstrap.min.css") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/bootstrap.min.css"),String)
+    end
+    Endpoint("/d3.v5.min.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/d3.v5.min.js"),String)
+    end
+    Endpoint("/d3-queue.v3.min.js") do request::HTTP.Request
+        read(joinpath(@__DIR__, "../www/lib/d3-queue.v3.min.js"),String)
+    end
     Pages.start();
 end

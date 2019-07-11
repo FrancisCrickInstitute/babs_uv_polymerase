@@ -5,6 +5,13 @@ var tour = new Tour({
     keyboard: true,
     storage: false,
     framework: "bootstrap4",
+    localization: {buttonTexts :{
+	nextButton:"Go on",
+	prevButton:"Go back",
+	pauseButton:"Wait a sec",
+	resumeButton:"Continue",
+	endTourButton:"It's over",
+    }},
     steps: [
 	{
 	    element: "#main_tab",
