@@ -24,11 +24,16 @@
 	 fill: none;
 	 stroke-width: 2px;
      }
+     .tour-backdrop {
+	 opacity: 0.6;
+     }
     </style>
   </head>
   <body>
     <div class="container-fluid" >
-      <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">Damage Repair Simulation</h1>
+      <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">
+	Damage Repair Simulation 
+	<button type="button" class="btn btn-info btn-lg" onclick="tour.restart()">Click for a guided tour</button></h1>
       <ul class="nav nav-tabs" role="tablist" >
 	<li class="nav-item">
 	  <a class="nav-link active" href="#main"  data-toggle="tab" role="tab" id="main_tab">Main</a>
@@ -769,7 +774,6 @@
 		 }
 	     }
 	 }, 400);
-	 tour.start();
      };
     </script>
   </body>
