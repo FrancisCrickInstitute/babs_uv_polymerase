@@ -17,7 +17,7 @@ var tour = new Tour({
 	    element: "#main_tab",
 	    title: "Startup Screen",
 	    onShow: function() {$("#main_tab").tab('show');},
-	    content: "We'll walk through the main features of the the DNA damage-repair simulator here.  This is the main screen which summarises all the simulations.",
+	    content: "<p>We'll walk through the main features of the the DNA damage-repair simulator here.  This is the main screen which summarises all the simulations.</p><p>There page should have loaded with our default settings - any changes you make to the setup will not be reflected in the animations <em>until you press the recalculate button</em> because the simulation itself can take several minutes to complete.</p>",
 	    placement: "right"
 	},
 	{
