@@ -75,7 +75,7 @@ var tour = new Tour({
 	{
 	    element: "#scene-footer div:first",
 	    title: "Scenario parameters",
-	    content: "Here you can select which parameters distinguish the scenarios: click one that already distinguishes scenarios removes it, so it's takes the default value across all scenarios; click a new one allows you then to tune it for each scenario individually",
+	    content: "Here you can select which parameters distinguish the scenarios: clicking one that already distinguishes scenarios removes it, so it's takes the default value across all scenarios; clicking a new one allows you then to tune it for each scenario individually",
 	    placement: "right"
 	},
 	{

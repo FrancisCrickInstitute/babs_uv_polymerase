@@ -1740,7 +1740,7 @@
 					}
 					else
 					{
-						title += '<span class="pull-right">' + (i + 1) + '/' + this.getStepCount() + '</span>';
+						title += '<span class="float-right">' + (i + 1) + '/' + this.getStepCount() + '</span>';
 					}
 				}
 
