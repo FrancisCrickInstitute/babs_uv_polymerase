@@ -17,13 +17,13 @@ var tour = new Tour({
 	    element: "#main_tab",
 	    title: "Startup Screen",
 	    onShow: function() {$("#main_tab").tab('show');},
-	    content: "<p>We'll walk through the main features of the the DNA damage-repair simulator here.  This is the main screen which summarises all the simulations.</p><p>There page should have loaded with our default settings - any changes you make to the setup will not be reflected in the animations <em>until you press the recalculate button</em> because the simulation itself can take several minutes to complete.</p>",
+	    content: "<p>We'll walk through the main features of the the transcription during DNA damage simulator here.  This is the main screen which summarises all the simulations.</p><p>The page should have loaded with our default settings - any changes you make to the setup will not be reflected in the animations <em>until you press the recalculate button</em> because the simulation itself can take several minutes to complete.</p>",
 	    placement: "right"
 	},
 	{
 	    element: "#cartoon",
 	    title: "Cartoon of example gene",
-	    content: "<p>Here we see a single simulation of the polymerases running along a specific gene. As the gene is so long, we have to wrap it starting from top left to bottom right.</p><p>Damage sites are highlighted in red, and repaired sites in green.  As time progresses, polymerases are introduced and depending on the way the simulation has been set up, they encounter damage sites and start to queue up.</p><p>These stalled polymerases can be removed either by dissociation (in which case they are available for initiation again) or degraded - in either case, their exit is visualised by their falling to the bottom of the animation.</p><p>Moving polymerases are also subject to removal from the gene body by processivity.</p>",
+	    content: "<p>Here we see a single simulation of the polymerases running along a specific gene. As the gene is so long, we have to wrap it starting from top left to bottom right.</p><p>Damage sites are highlighted in red, and repaired sites in green.  As time progresses, polymerases are introduced according to the initiation rate, and depending on the way the simulation has been set up, they encounter damage sites and start to queue up.</p><p>These stalled polymerases can be removed either by dissociation (in which case they are available for initiation again) or degraded - in either case, their exit is visualised by their falling to the bottom of the animation.</p><p>Moving polymerases are also subject to random removal from the gene body when processivity is not perfect. In the default settings, processivity is high (RNAPII is lasts two hours on average.)</p>",
 	    placement: "right"
 	},
 	{

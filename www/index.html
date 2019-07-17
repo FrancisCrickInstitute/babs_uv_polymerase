@@ -30,9 +30,24 @@
     </style>
   </head>
   <body>
+    <div class="modal fade" id="waitModal" tabindex="-1" role="dialog" aria-labelledby="waitModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header">
+            <h5 class="modal-title" id="waitModalLabel">Please wait</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+	  </div>
+	  <div class="modal-body">
+            <p id="waitText">The first page is being loaded with our default settings, and the visualisation is being downloaded</p>
+	  </div>
+	</div>
+      </div>
+    </div>
     <div class="container-fluid" >
       <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">
-	Damage Repair Simulation 
+	Transcription during DNA Damage Simulation
 	<button type="button" class="btn btn-info btn-lg" onclick="tour.restart()">Click for a guided tour</button></h1>
       <ul class="nav nav-tabs" role="tablist" >
 	<li class="nav-item">
@@ -541,7 +556,8 @@
 	     .call(d3.axisLeft(yscale));
 	 svg.append("text").attr("x",420).attr("y", 40)
 	    .attr("class","movie_timer")
-	    .text("0");
+            .text("0");
+         svg.append("text").attr("x", 420).attr("y", 60).attr("class","line_legend");
      }
      function remove_card(d) {
 	 var i;
@@ -568,7 +584,11 @@
 	      .attr("class","pol_path")
 	      .merge(paths)
 	      .attr("stroke", (d,i) => annot_within[i].colour.Value)
-	      .attr("d", (d,i) => valueline(d[0]));
+      .attr("d", (d,i) => valueline(d[0]));
+      var legend=card.select(".line_legend").selectAll("tspan")
+      .data((d,i)= > annot_within[i].name.Value);
+      legend.exit().remove();
+      legend.enter().append("tspan").merge(legend).attr("text", (d,i)=>d);
      }
 
      const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
@@ -615,7 +635,9 @@
 	       .call(build_new_card)
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
-     function load_cartoon(d) {
+      function load_cartoon(d) {
+         $('#waitModal').modal('hide');
+         $('#waitText').html('The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient.');
 	 cartoon_ind=1;
 	 cartoon_data=d;
 	 cartoon.selectAll("circle").data([]).exit().remove();
@@ -698,8 +720,9 @@
 	     }
 	 }
      }
-
-      var urlParams = new URLSearchParams(window.location.search);
+     
+     var urlParams = new URLSearchParams(window.location.search);
+     $('#waitModal').modal('show');
      if (urlParams.get("bookmark")==null) {
 	 d3.json("anim_file.json").then(show_movies); 
      } else {
@@ -769,11 +792,11 @@
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
 		 if (is_capturing && (movie_ind==0)) { // ie we've done a complete video loop
-		     generate_webms();
-		     is_capturing=false;
-		 }
-	     }
-	 }, 400);
+	     generate_webms();
+	     is_capturing=false;
+     }
+     }
+     }, 400);
      };
     </script>
   </body>
