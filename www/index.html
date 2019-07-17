@@ -586,7 +586,7 @@
 	      .attr("stroke", (d,i) => annot_within[i].colour.Value)
 	      .attr("d", (d,i) => valueline(d[0]));
 	 var legend=card.select(".line_legend").selectAll("tspan")
-			.data((d,i)=> annot_within[i]);
+			.data((d,i)=> annot_within);
 	 legend.exit().remove();
 	 legend.enter().append("tspan").merge(legend)
 	       .text( (d,i)=>d.name.Value)
