@@ -557,7 +557,7 @@
 	 svg.append("text").attr("x",420).attr("y", 40)
 	    .attr("class","movie_timer")
             .text("0");
-         svg.append("text").attr("x", 420).attr("y", 60).attr("class","line_legend");
+         svg.append("text").attr("x", 480).attr("y", 60).attr("class","line_legend").attr("font-weight", "bold").attr("text-anchor", "end");
      }
      function remove_card(d) {
 	 var i;
@@ -584,11 +584,14 @@
 	      .attr("class","pol_path")
 	      .merge(paths)
 	      .attr("stroke", (d,i) => annot_within[i].colour.Value)
-      .attr("d", (d,i) => valueline(d[0]));
-      var legend=card.select(".line_legend").selectAll("tspan")
-      .data((d,i)= > annot_within[i].name.Value);
-      legend.exit().remove();
-      legend.enter().append("tspan").merge(legend).attr("text", (d,i)=>d);
+	      .attr("d", (d,i) => valueline(d[0]));
+	 var legend=card.select(".line_legend").selectAll("tspan")
+			.data((d,i)=> annot_within[i]);
+	 legend.exit().remove();
+	 legend.enter().append("tspan").merge(legend)
+	       .text( (d,i)=>d.name.Value)
+	       .attr("fill", (d,i)=>d.colour.Value)
+	 .attr("dy", (d,i)=>20).attr("x", 480);
      }
 
      const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
@@ -635,7 +638,7 @@
 	       .call(build_new_card)
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
-      function load_cartoon(d) {
+     function load_cartoon(d) {
          $('#waitModal').modal('hide');
          $('#waitText').html('The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient.');
 	 cartoon_ind=1;
@@ -792,11 +795,11 @@
 		 update_movies(movie_ind);
 		 movie_ind = (movie_ind+1) % maxti;
 		 if (is_capturing && (movie_ind==0)) { // ie we've done a complete video loop
-	     generate_webms();
-	     is_capturing=false;
-     }
-     }
-     }, 400);
+		     generate_webms();
+		     is_capturing=false;
+		 }
+	     }
+	 }, 400);
      };
     </script>
   </body>
