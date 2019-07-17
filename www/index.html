@@ -438,7 +438,7 @@
      function recalculate() {
 	 cartoon_timer.stop();
 	 movie_timer.stop();
-	 document.getElementById("bookmark_url").textContent("");
+	 $("#bookmark_url").text("");
 	 d3.json("recalculate.json", {
 	     method: "POST",
 	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
