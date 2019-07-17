@@ -21,6 +21,12 @@ var tour = new Tour({
 	    placement: "right"
 	},
 	{
+	    element: "#tour-button",
+	    title: "Redo tour",
+	    content: "<p>You can always watch the tour again by pressing this button.</p>",
+	    placement: "right"
+	},
+	{
 	    element: "#cartoon",
 	    title: "Cartoon of example gene",
 	    content: "<p>Here we see a single simulation of the polymerases running along a specific gene. As the gene is so long, we have to wrap it starting from top left to bottom right.</p><p>Damage sites are highlighted in red, and repaired sites in green.  As time progresses, polymerases are introduced according to the initiation rate, and depending on the way the simulation has been set up, they encounter damage sites and start to queue up.</p><p>These stalled polymerases can be removed either by dissociation (in which case they are available for initiation again) or degraded - in either case, their exit is visualised by their falling to the bottom of the animation.</p><p>Moving polymerases are also subject to random removal from the gene body when processivity is not perfect. In the default settings, processivity is high (RNAPII is lasts two hours on average.)</p>",

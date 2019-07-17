@@ -48,7 +48,7 @@
     <div class="container-fluid" >
       <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">
 	Transcription during DNA Damage Simulation
-	<button type="button" class="btn btn-info btn-lg" onclick="tour.restart()">Click for a guided tour</button></h1>
+	<button type="button" class="btn btn-info btn-lg" id="tour-button" onclick="tour.restart()">Click for a guided tour</button></h1>
       <ul class="nav nav-tabs" role="tablist" >
 	<li class="nav-item">
 	  <a class="nav-link active" href="#main"  data-toggle="tab" role="tab" id="main_tab">Main</a>
@@ -438,7 +438,7 @@
      function recalculate() {
 	 cartoon_timer.stop();
 	 movie_timer.stop();
-	 document.getElementByID("bookmark_url").textContent("");
+	 document.getElementById("bookmark_url").textContent("");
 	 d3.json("recalculate.json", {
 	     method: "POST",
 	     body: JSON.stringify({"scenarios":anim_data.scenarios, "genes": anim_data.genes, "default": anim_data.default, "id":Pages.id}),
@@ -591,7 +591,7 @@
 	 legend.enter().append("tspan").merge(legend)
 	       .text( (d,i)=>d.name.Value)
 	       .attr("fill", (d,i)=>d.colour.Value)
-	 .attr("dy", (d,i)=>20).attr("x", 480);
+	       .attr("dy", (d,i)=>20).attr("x", 480);
      }
 
      const maxer = (accumulator, currentValue) => Math.max(accumulator, currentValue);
@@ -640,7 +640,11 @@
        });
      function load_cartoon(d) {
          $('#waitModal').modal('hide');
-         $('#waitText').html('The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient.');
+         $('#waitText').html('The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter on each tab.');
+	 if (!document.cookie.includes("visited=yes")) {
+	     tour.restart();
+	     document.cookie="visited=yes";
+	 }
 	 cartoon_ind=1;
 	 cartoon_data=d;
 	 cartoon.selectAll("circle").data([]).exit().remove();
@@ -723,7 +727,6 @@
 	     }
 	 }
      }
-     
      var urlParams = new URLSearchParams(window.location.search);
      $('#waitModal').modal('show');
      if (urlParams.get("bookmark")==null) {
