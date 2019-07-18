@@ -112,7 +112,7 @@
 	  <button  onclick="get_bookmark()" type="button" class="btn btn-primary">Get Bookmark</button>
 	  <span id="bookmark_url"></span>
 	</div>
-	<div class="progress"></div>
+	<div class="progress"><div class="progress-bar"></div></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
 
       </div>
@@ -413,7 +413,7 @@
 	  .property("checked", (dat,i) => i==d.value.Value)
 	  .attr("value",(d,i) => i);
 	 b.append("span").text(I);
-	 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;});
+	 row.selectAll("input").on("change", function(dat,i) {d.value.Value = i;warn_recalc();});
      }
      function show_form(node, data) {
 	 var all_rows = node.selectAll('div')
@@ -431,9 +431,15 @@
 	 rows.filter(d => !d.value.Unit.includes("|")).append("input")
 	     .attr("class", "form-control col-4")
 	     .attr("value", d=>d.value.Value)
-	     .on("input", function(d,i){d.value.Value = (this.value==null)?null:+this.value;});
+	     .on("input", function(d,i){
+		 d.value.Value = (this.value==null)?null:+this.value;
+	     	 warn_recalc();
+	     });
 	 rows.filter(d => !d.value.Unit.includes("|")).append("span")
 	     .text(d=> d.value.Unit);
+     }
+     function warn_recalc () {
+	 d3.selectAll(".progress-bar").text("Charts do not reflect current settings. Recalculate when you've made all required changes.").attr("width", "100%").style("background-color","#dc3545 ");
      }
      function recalculate() {
 	 cartoon_timer.stop();
@@ -457,7 +463,8 @@
 	 document.getElementById("bookmark_url").textContent=window.location.href.split('?')[0] + "?bookmark=" + bookmark.bookmark;
      }
      function progress(task, n) {
-	 d3.select(".progress").text(task + ": " +  n + "/100");
+	 var col = anim_data.scenarios.filter(d => d.name.Value==task)[0].colour.Value;
+	 d3.selectAll(".progress-bar").text(task).attr("width",   n + "%").style("background-color",col);
      }
      function show_repair(data) {
 	 var rows = d3.select("#repair").selectAll('tr')
@@ -640,8 +647,9 @@
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
      function load_cartoon(d) {
-         $('#waitModal').modal('hide');
-         $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter at the bottom of each page in addition to here.</p><p class="progress"></p>');
+         $('#waitModal').modal('hide');col
+	 d3.selectAll(".progress-bar").text("Completed").attr("width", "100%").style("background-color","#e9ecef");
+         $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter at the bottom of each page in addition to here.</p><div class="progress"><div class="progress-bar"></div></div>');
 	 if (!document.cookie.includes("visited=yes")) {
 	     tour.restart();
 	     document.cookie="visited=yes";
