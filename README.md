@@ -1,4 +1,9 @@
-# babs_uv_polymerase
+# Transcription during DNA Damage - a simulation
+## Availability
+We currently have the following instances available for interactively
+using the simulator:
+* [Francis Crick Institute](http://51.104.223.167:8000/uv_damage)
+
 ## Description
 A simulator of polymerase dynamics during transcription in the
 presence of UV damage. Written in Julia and visualised in
@@ -64,7 +69,7 @@ parameters given in table 2.
 |bump | Polymerase catches up with 5' neighbour | Minimum across polymerases of delta_distance/delta_speed | " | |
 |pause | Polymerase reaches pause site| based on 5'-most polymerase prior to pause site | " |  |
 |release | Paused polymerase will be released from pause site| User-specified time after it first paused | Affected polymerase will have speed restored to default. | |
-|processivity | Polymerase removed from gene prematurely| Upon initiation, each polymerase is given an stochastic duration it is allowed to spend on the gene. | Polymerase will either be made available for initiation, or discarded entirely via Bernoulli probability.| |
+|removal | Polymerase removed from gene prematurely| Upon initiation, each polymerase is given an stochastic duration it is allowed to spend on the gene. | Polymerase will either be made available for initiation, or discarded entirely via Bernoulli probability, calculated so that the dissociation and degradation times are satisfied| |
 |complete | Polymerase successfully reaches the full gene length | Minimum across polymerases of distance-to-end/speed | " | | 
 |repair | UV damage site will be removed | At t_0, each (random) damage site is allocated an exponentially-distributed random lifetime. | Speed of 3' (queue of) polymerases restored to default | 
 
@@ -74,19 +79,19 @@ parameters given in table 2.
 |---------- | ----------- | ------------- |
 | gene_length | Number of bases a polymerases must traverse to transcribe a gene | 63kb |
 | initiation_period | Expected duration between initiation attempts | 2.5seconds |
-| uv_distance | Expected distance between damage sites | 10kb |
-| run_length | How long to simulate the dynamics | 240minutes |
-| pol_speed | Default speed of a polymerase| 2000bp/minutes |
-| pol_size | How many bases a polymerase occupies | 33.0bp |
-| repair_half_life | Time after half the damage sites are expected to have been repaired | 4hours |
-| processivity | Expected duration a moving polymerase can remain on a gene | 1hours |
-| removal | Expected duration a stalled polymerase can remain on a gene | 10.0minutes |
+| pol_N | The number of polymerases in the pool available for initiation in steady state| 250 |
 | pause_site | Distance from TSS where each polymerase will pause  | 60bp |
 | release_time | How long each polymerase will wait at the pause site| 3seconds |
+| pol_speed | Default speed of a polymerase| 2000bp/minutes |
+| pol_size | How many bases a polymerase occupies | 33.0bp |
+| processivity | Expected duration a moving polymerase can remain on a gene | 2hours |
+| degradation | Expected duration a stalled polymerase can remain on a gene | Infinite |
+| dissociation | Expected duration a general polymerase can remain on a gene | 10minutes |
+| uv_distance | Expected distance between damage sites | 20kb |
+| run_length | How long to simulate the dynamics | 240minutes |
+| repair_half_life | Time after half the damage sites are expected to have been repaired | 4hours |
 | speed_factor_t0 | Polymerases will speed up by this factor when transitioning from steady state to damaged state | 1.0 | 
-| pol_N | The number of polymerases in the pool available for initiation in steady state| 20000 |
 | complete_reuse_p | Probability a polymerase will be available for initiation once it has completed transcription| 1 | 
-| dropoff_reuse_p | Probability a polymerase will be available for initiation if it is removed prematurely| 1 | 
 | genome_prop | What proportion of genes in the genome are characterised by this set of parameters | 1 |
 | Type |Whether to include stationery polymerases in the calculation of density | Active |
 | tally_interval |How frequently to record and draw the density information | 3minutes |
@@ -98,9 +103,17 @@ Once the package is cloned, a Dockerfile is available to start a web
 front-end that allows the user to interact with the settings of the
 simulation and to view the results.
 
-## Availability
-We currently have the following instances available for interactively
-using the simulator:
-* [Francis Crick Institute](http://51.145.52.51:8000/uv_damage)
 
 ## Usage
+Build and run the local docker file with
+
+``` shell
+docker build --no-cache -t uv_damage .
+docker run --rm  -p 8080:8000 uv_damage
+```
+and then point your web-browser at ipaddress:8080/uv_damage to
+interact with the simulator. You should be given a tour of the
+interface and will then be able to interact with the simulator.
+
+
+
