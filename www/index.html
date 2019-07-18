@@ -647,7 +647,7 @@
 	       .call(update_card, [[0]], anim_data.scenarios);
        });
      function load_cartoon(d) {
-         $('#waitModal').modal('hide');col
+         $('#waitModal').modal('hide');
 	 d3.selectAll(".progress-bar").text("Completed").style("width", "100%").style("background-color","#e9ecef");
          $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress bar at the top of each page in addition to here.</p><div class="progress"><div class="progress-bar"></div></div>');
 	 if (!document.cookie.includes("visited=yes")) {
