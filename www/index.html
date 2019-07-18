@@ -49,6 +49,7 @@
       <h1 class="display-3 p-3 border"  style="background-color:#82c9f0;">
 	Transcription during DNA Damage Simulation
 	<button type="button" class="btn btn-info btn-lg" id="tour-button" onclick="tour.restart()">Click for a guided tour</button></h1>
+      <div class="progress"><div class="progress-bar"></div></div>
       <ul class="nav nav-tabs" role="tablist" >
 	<li class="nav-item">
 	  <a class="nav-link active" href="#main"  data-toggle="tab" role="tab" id="main_tab">Main</a>
@@ -112,7 +113,6 @@
 	  <button  onclick="get_bookmark()" type="button" class="btn btn-primary">Get Bookmark</button>
 	  <span id="bookmark_url"></span>
 	</div>
-	<div class="progress"><div class="progress-bar"></div></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
 
       </div>
@@ -439,7 +439,7 @@
 	     .text(d=> d.value.Unit);
      }
      function warn_recalc () {
-	 d3.selectAll(".progress-bar").text("Charts do not reflect current settings. Recalculate when you've made all required changes.").attr("width", "100%").style("background-color","#dc3545 ");
+	 d3.selectAll(".progress-bar").text("Charts do not reflect current settings. Recalculate when you've made all required changes.").style("width", "100%").style("background-color","#dc3545 ");
      }
      function recalculate() {
 	 cartoon_timer.stop();
@@ -464,7 +464,7 @@
      }
      function progress(task, n) {
 	 var col = anim_data.scenarios.filter(d => d.name.Value==task)[0].colour.Value;
-	 d3.selectAll(".progress-bar").text(task).attr("width",   n + "%").style("background-color",col);
+	 d3.selectAll(".progress-bar").text(task).style("width",   n + "%").style("background-color",col);
      }
      function show_repair(data) {
 	 var rows = d3.select("#repair").selectAll('tr')
@@ -648,8 +648,8 @@
        });
      function load_cartoon(d) {
          $('#waitModal').modal('hide');col
-	 d3.selectAll(".progress-bar").text("Completed").attr("width", "100%").style("background-color","#e9ecef");
-         $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter at the bottom of each page in addition to here.</p><div class="progress"><div class="progress-bar"></div></div>');
+	 d3.selectAll(".progress-bar").text("Completed").style("width", "100%").style("background-color","#e9ecef");
+         $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress bar at the top of each page in addition to here.</p><div class="progress"><div class="progress-bar"></div></div>');
 	 if (!document.cookie.includes("visited=yes")) {
 	     tour.restart();
 	     document.cookie="visited=yes";
