@@ -112,7 +112,7 @@
 	  <button  onclick="get_bookmark()" type="button" class="btn btn-primary">Get Bookmark</button>
 	  <span id="bookmark_url"></span>
 	</div>
-	<div id="progress"></div>
+	<div class="progress"></div>
 	<div><input type="checkbox" checked id="pauser"> Animate</div>
 
       </div>
@@ -438,6 +438,7 @@
      function recalculate() {
 	 cartoon_timer.stop();
 	 movie_timer.stop();
+	 $('#waitModal').modal('show');
 	 $("#bookmark_url").text("");
 	 d3.json("recalculate.json", {
 	     method: "POST",
@@ -456,7 +457,7 @@
 	 document.getElementById("bookmark_url").textContent=window.location.href.split('?')[0] + "?bookmark=" + bookmark.bookmark;
      }
      function progress(task, n) {
-	 d3.select("#progress").text(task + ": " +  n + "/100");
+	 d3.select(".progress").text(task + ": " +  n + "/100");
      }
      function show_repair(data) {
 	 var rows = d3.select("#repair").selectAll('tr')
@@ -640,7 +641,7 @@
        });
      function load_cartoon(d) {
          $('#waitModal').modal('hide');
-         $('#waitText').html('The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter on each tab.');
+         $('#waitText').html('<p>The simulation is running. The calculations and the simulation itself can take <b>several minutes</b> to complete. Please be patient - there is a progress counter at the bottom of each page in addition to here.</p><p class="progress"></p>');
 	 if (!document.cookie.includes("visited=yes")) {
 	     tour.restart();
 	     document.cookie="visited=yes";

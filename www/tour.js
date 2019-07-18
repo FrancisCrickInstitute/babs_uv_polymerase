@@ -17,7 +17,7 @@ var tour = new Tour({
 	    element: "#main_tab",
 	    title: "Startup Screen",
 	    onShow: function() {$("#main_tab").tab('show');},
-	    content: "<p>We'll walk through the main features of the the transcription during DNA damage simulator here.  This is the main screen which summarises all the simulations.</p><p>The page should have loaded with our default settings - any changes you make to the setup will not be reflected in the animations <em>until you press the recalculate button</em> because the simulation itself can take several minutes to complete.</p>",
+	    content: "<p>We'll walk through the main features of the 'transcription during DNA damage' simulator.  This is the main screen which summarises all the simulations.</p><p>The page should have loaded with our default settings - any changes you make to the setup will not be reflected in the animations <b>until you press the recalculate button</b> because the simulation itself can take several minutes to complete.</p>",
 	    placement: "right"
 	},
 	{
@@ -53,7 +53,7 @@ var tour = new Tour({
 	{
 	    element: "#params_form",
 	    title: "Global settings",
-	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank.",
+	    content: "These are the values that will describe the behaviour of the cells and their polymerases.  If you hover over the row label, you will see a brief description of what effect it will have. If you want any of the durations to be infinite (e.g. no repair) then leave that field entirely blank. A reminder: changes made will not have an immediate effect, you will need to press the recalculate button to trigger this.",
 	    placement: "right"
 	},
 	{
@@ -103,7 +103,7 @@ var tour = new Tour({
 	    title: "Recalculate results",
 	    onNext: function() {$(this.element).tab('show');},
 	    onPrev: function() {$("#genes_tab").tab('show');},
-	    content: "Use this tab to simulate a new set of parameters, scenarios and genes",
+	    content: "Use this tab to simulate a new set of parameters, scenarios and genes; until you do this the graphs will reflect previously chosen values.",
 	    placement: "right"
 	},
 	{
@@ -111,7 +111,7 @@ var tour = new Tour({
 	    title: "Run Simulation",
 	    delayOnElement: {delayElement: "element" },
 	    onNext: function() {$("#main_tab").tab('show');},
-	    content: "This button will send the parameters back to the server to run the simulation.  It may take quite a while: each scenario is simulated in turn, and a counter should progress to 100 for each. Once completed, the animations on the previous tabs will be rebuilt, and this page will refresh with the ability to download overall stats and movie files for the simulation",
+	    content: "This button will send the parameters back to the server to run the simulation.  It may take quite a while: each scenario is simulated in turn, and a counter should progress to 100 for each. Once completed, the animations on the previous tabs will be rebuilt, and this page will refresh with the ability to download overall stats and movie files for the simulation.",
 	    placement: "right"
 	}
     ]
