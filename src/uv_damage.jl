@@ -32,7 +32,7 @@ function steady_state!(gene::Gene)
     k=gene.time
     gene.pol_N = gene.vars["pol_N"] 
     ## Some events get decremented, even though we're not including them in the event loop
-    gene.events.tally.time[1] = Float64(gene.vars["tally_interval"])
+    gene.events.tally.time[1] = Float64(0)
     gene.events.repair.time .+=  gene.time
     gene.events.block.time .+=  gene.time
     gene.time = 0.0
