@@ -23,11 +23,13 @@ include("server.jl")
 # * Run Simulations
 # ** Launch pols until at least one completes.  Limited event-set
 function steady_state!(gene::Gene)
-  ## Keep removal in, as 'pause' has an effect on time-to-next
+  ## Keep dissoc/degrad in, as 'pause' has an effect on time-to-next
     ## No block, repair, or tally
     steady_events = [:initiate :complete :processivity :pause :release :bump :dissoc :degrad]
+    pol_N = gene.pol_N # keep topping up to this level
     while gene.history[:complete]==0
         update!(gene, events=steady_events) 
+        gene.pol_N = pol_N
     end
     k=gene.time
     gene.pol_N = gene.vars["pol_N"] 
@@ -75,7 +77,7 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
     end
     while time_left > 0
         ind = argmin(time_to_next)
-        genes[ind].pol_N = pol_N
+        genes[ind].pol_N = pol_N # so `update` will have access to this property of the 'cell'
         (elapsed,ev)=update!(genes[ind])
         if record && (ind==gene_to_record) && ev==:initiate
             JSON.print(io, Dict("time" => genes[ind].time,
@@ -89,12 +91,20 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
         if ev == :tally
             print(time_left, "\n")
         end
-        tally_time -= elapsed - since_last[ind]
-        pol_N +=  genes[ind].freedPols * genes[ind].vars["genome_prop"]
-        if pol_N <1
-            pol_N=1
+        if genes[ind].freedPols !=0
+            pol_N +=  genes[ind].freedPols * genes[ind].vars["genome_prop"]
+            for g in keys(genes)
+                if genes[g].vars["genome_prop"] > pol_N
+                    genes[g].events.initiate.time[1] = Inf
+                else
+                    genes[g].events.initiate.time[1] = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
+                end
+            end
+            genes[ind].freedPols = 0
         end
-        genes[ind].freedPols = 0
+        # if pol_N <1
+        #     pol_N=1
+        # end
         delta_t = time_to_next[ind]
         for j in keys(since_last)
             if j==ind
