@@ -43,8 +43,8 @@ release       ::indexed_event
 pause         ::indexed_event
 tally          ::indexed_event
 processivity  ::indexed_event
-dissoc   ::indexed_event
-degrad   ::indexed_event
+dissoc        ::indexed_event
+degrad        ::indexed_event
 complete      ::indexed_event
 repair        ::indexed_event
     EventSet(;initiate=indexed_event(), block=indexed_event(), bump=indexed_event(), release=indexed_event(), pause=indexed_event(), tally=indexed_event(), processivity=indexed_event(Float64[]), dissoc=indexed_event(Float64[]), degrad=indexed_event(Float64[]), complete=indexed_event(), repair=indexed_event()) =
@@ -83,7 +83,7 @@ function Gene(vars::Dict)
     events = EventSet(
     initiate = indexed_event(random_time(vars["initiation_period"],1)),
     repair = repairevent,
-    tally = indexed_event(Float64(vars["tally_interval"]))
+    tally = indexed_event(Float64(0))
     )
     loci = vcat(damage, 0, vars["pause_site"], vars["gene_length"])
     loci = reverse(sort(loci))

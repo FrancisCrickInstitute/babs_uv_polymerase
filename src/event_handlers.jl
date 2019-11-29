@@ -80,8 +80,6 @@ function processivity(gene::Gene, event::indexed_event, elapsed::Float64)
         gene.events.pause.time[1] = Inf
     end
     update_speeds!(gene, ind)
-#    remove_pol!(gene, ind, prob=gene.vars["dropoff_reuse_p"])
-#    p_reuse = (1/(gene.vars["dissoc"])) / (1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
     remove_pol!(gene, ind, prob=1)
     return(nothing)
 end

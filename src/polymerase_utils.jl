@@ -35,7 +35,7 @@ end
 # ** Find a touching train of polymerases    
 
 function find_chain(gene::Gene, ind::Int64, chaintype::String)
-    ## Used in update_speeds to speed up (following release, repair, processivity, removal) a whole chain
+    ## Used in update_speeds to speed up (following release, repair, processivity, dissoc, degrad) a whole chain
     ## Used in bump to slow down a whole chain
     if ind==length(gene.pol_position)
         return(ind:ind)

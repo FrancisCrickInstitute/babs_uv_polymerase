@@ -62,7 +62,7 @@ end
 
 const time_handlers = Dict(
     :n0 => [block_t, complete_t, bump_t, pause_t], # =initiate when empty
-    :all_gone => [all_gone_t], # = all pols removed through removal
+    :all_gone => [all_gone_t], # = all pols removed through dissoc/degrad
     :initiate => [bump_t, pause_t],
     :block => [bump_t, complete_t, block_t],
     :bump => [bump_t, pause_t, block_t, complete_t],

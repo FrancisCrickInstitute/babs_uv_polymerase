@@ -59,7 +59,6 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
         genes[g].default_speed *= genes[g].vars["speed_factor_t0"]
         genes[g].pol_speed .*= genes[g].vars["speed_factor_t0"]
     end
-    tally_time = -1
     ntime=0
     time_left=sim_time
     time_to_next = [nextEvent(g)[1] for g in genes]
@@ -85,7 +84,6 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
                                 "id" => genes[ind].pol_id,
                                 "event"=>String(ev)))
             write(io,",\n")
-            tally_time = v["tally_interval"]
         end
         time_left -= elapsed - since_last[ind]
         delta_t = time_to_next[ind]
