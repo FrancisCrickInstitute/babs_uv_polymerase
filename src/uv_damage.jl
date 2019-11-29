@@ -88,9 +88,6 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
             tally_time = v["tally_interval"]
         end
         time_left -= elapsed - since_last[ind]
-        if ev == :tally
-            print(time_left, "\n")
-        end
         delta_t = time_to_next[ind]
         # Move everything forward in the queue
         for j in keys(since_last)
@@ -111,7 +108,7 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
                  else
                      t = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
                      genes[g].events.initiate.time[1] = t + since_last[g]
-                     time_to_next[g] = nextEvent(genes[g])[1]
+                     time_to_next[g] = uv_damage.nextEvent(genes[g])[1] - since_last[g]
                  end
              end
             genes[ind].freedPols = 0

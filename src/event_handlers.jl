@@ -8,11 +8,6 @@ function initiate(gene::Gene, event::indexed_event, elapsed::Float64)
     else
         gene.history[:failed] += 1
     end
-    # When will next initiation occur - a poisson time with a rate that decays
-    #event.time[1] = random_time(gene.vars["initiation_period"] * 2^(gene.time/gene.vars["doubling_time"]))[1]
-    # When will next initiation occur - derived from number of free polymerases in just for this instance
-    ##event.time[1] = random_time(gene.vars["initiation_period"] * gene.vars["pol_N"] / gene.pol_N)[1]
-    # When will next initiation occur - derived from number of free polymerases in environment context
     event.time[1] = random_time(gene.vars["initiation_period"] * gene.vars["pol_N"] / gene.pol_N )[1]
     return(nothing)
 end
@@ -137,7 +132,7 @@ function tally(gene::Gene, event::indexed_event, elapsed::Float64)
         bin = div.(floor.(Int, gene.pol_position.-1), gene.vars["tally_binsize"])
     end
     if (length(bin)!=0)
-        gene.tally_matrix[:,1+gene.history[:tally]] .= counts(bin, UnitRange(0,size(gene.tally_matrix,1)-1))
+        gene.tally_matrix[:,gene.history[:tally]] .= counts(bin, UnitRange(0,size(gene.tally_matrix,1)-1))
     end
     return(nothing)
 end
