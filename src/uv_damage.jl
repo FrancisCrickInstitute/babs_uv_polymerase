@@ -91,21 +91,8 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
         if ev == :tally
             print(time_left, "\n")
         end
-        if genes[ind].freedPols !=0
-            pol_N +=  genes[ind].freedPols * genes[ind].vars["genome_prop"]
-            for g in keys(genes)
-                if genes[g].vars["genome_prop"] > pol_N
-                    genes[g].events.initiate.time[1] = Inf
-                else
-                    genes[g].events.initiate.time[1] = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
-                end
-            end
-            genes[ind].freedPols = 0
-        end
-        # if pol_N <1
-        #     pol_N=1
-        # end
         delta_t = time_to_next[ind]
+        # Move everything forward in the queue
         for j in keys(since_last)
             if j==ind
                 since_last[j]=0
@@ -114,6 +101,19 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
                 since_last[j] += delta_t
                 time_to_next[j] -= delta_t
             end
+        end
+        # Do we need to refresh the initiation rates
+        if genes[ind].freedPols !=0
+            pol_N +=  genes[ind].freedPols * genes[ind].vars["genome_prop"]
+             for g in keys(genes)
+                 if genes[g].vars["genome_prop"] > pol_N
+                     genes[g].events.initiate.time[1] = Inf
+            #     else
+            #         genes[g].events.initiate.time[1] = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
+            #         time_to_next[g] = min(time_to_next[g], genes[g].events.initiate.time[1])
+                 end
+             end
+            genes[ind].freedPols = 0
         end
     end
     if record
