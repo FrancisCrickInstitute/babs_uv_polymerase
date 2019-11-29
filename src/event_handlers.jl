@@ -3,7 +3,7 @@
 # *** Initiate - if space, add polymerase, else record an initiation-failed
 function initiate(gene::Gene, event::indexed_event, elapsed::Float64)
     move_pols!(gene, elapsed)
-    if length(gene.pol_position)==0 || gene.pol_position[end] >= gene.vars["pol_size"] # Failed initiation due to occupancy
+    if length(gene.pol_position)==0 || gene.pol_position[end] -1 >= gene.vars["pol_size"] # Failed initiation due to occupancy
         add_pol!(gene)
     else
         gene.history[:failed] += 1
