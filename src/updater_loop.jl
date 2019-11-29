@@ -32,7 +32,8 @@ function update_prior_times(gene::Gene, willelapse::Float64)
     for i in eachindex(gene.pol_state)
         gene.events.processivity.time[i] -= willelapse
         if gene.pol_state[i] != "active"
-            gene.events.removal.time[i] -= willelapse
+            gene.events.dissoc.time[i] -= willelapse
+            gene.events.degrad.time[i] -= willelapse
         end
     end
     gene.events.initiate.time[1] -= willelapse

@@ -57,21 +57,21 @@ function add_pol!(gene::Gene; pos=1.0, speed=gene.default_speed)
     push!(gene.pol_state, "active")
     gene.next_id += 1
     push!(gene.pol_id, gene.next_id)
-    removal_t = 1/(1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
     push!(gene.events.processivity.time, random_time(gene.vars["processivity"])[1])
-    #    push!(gene.events.removal.time, random_time(gene.vars["removal"])[1])
-    push!(gene.events.removal.time, random_time(removal_t)[1])
+    push!(gene.events.dissoc.time, random_time(gene.vars["dissoc"])[1])
+    push!(gene.events.degrad.time, random_time(gene.vars["degrad"])[1])
     gene.freedPols=-1
     return(nothing)
 end
 
-function remove_pol!(gene::Gene,ind::Int64; prob=.8)
+function remove_pol!(gene::Gene,ind::Int64; prob=0.8)
     deleteat!(gene.pol_position, ind)
     deleteat!(gene.pol_speed, ind)
     deleteat!(gene.pol_state, ind)
     deleteat!(gene.pol_id, ind)
     deleteat!(gene.events.processivity.time, ind)
-    deleteat!(gene.events.removal.time, ind)
+    deleteat!(gene.events.dissoc.time, ind)
+    deleteat!(gene.events.degrad.time, ind)
     gene.freedPols = rand(Bernoulli(prob)) # prob is probability of a 1
     return(nothing)
 end

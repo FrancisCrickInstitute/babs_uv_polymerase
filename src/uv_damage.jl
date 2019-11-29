@@ -25,7 +25,7 @@ include("server.jl")
 function steady_state!(gene::Gene)
   ## Keep removal in, as 'pause' has an effect on time-to-next
     ## No block, repair, or tally
-    steady_events = [:initiate :complete :processivity :pause :release :bump :removal]
+    steady_events = [:initiate :complete :processivity :pause :release :bump :dissoc :degrad]
     while gene.history[:complete]==0
         update!(gene, events=steady_events) 
     end
@@ -86,6 +86,9 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
             tally_time = v["tally_interval"]
         end
         time_left -= elapsed - since_last[ind]
+        if ev == :tally
+            print(time_left, "\n")
+        end
         tally_time -= elapsed - since_last[ind]
         pol_N +=  genes[ind].freedPols * genes[ind].vars["genome_prop"]
         if pol_N <1

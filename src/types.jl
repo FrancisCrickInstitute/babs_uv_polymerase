@@ -43,10 +43,12 @@ release       ::indexed_event
 pause         ::indexed_event
 tally          ::indexed_event
 processivity  ::indexed_event
-removal   ::indexed_event
+dissoc   ::indexed_event
+degrad   ::indexed_event
 complete      ::indexed_event
 repair        ::indexed_event
-EventSet(;initiate=indexed_event(), block=indexed_event(), bump=indexed_event(), release=indexed_event(), pause=indexed_event(), tally=indexed_event(), processivity=indexed_event(Float64[]), removal=indexed_event(Float64[]), complete=indexed_event(), repair=indexed_event()) = new(initiate, block, bump, release, pause, tally, processivity, removal, complete, repair)
+    EventSet(;initiate=indexed_event(), block=indexed_event(), bump=indexed_event(), release=indexed_event(), pause=indexed_event(), tally=indexed_event(), processivity=indexed_event(Float64[]), dissoc=indexed_event(Float64[]), degrad=indexed_event(Float64[]), complete=indexed_event(), repair=indexed_event()) =
+        new(initiate, block, bump, release, pause, tally, processivity, dissoc, degrad, complete, repair)
 end
 
 

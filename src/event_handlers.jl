@@ -94,7 +94,7 @@ end
 
 
 # *** Removal - same as processivity
-function removal(gene::Gene, event::indexed_event, elapsed::Float64)
+function degrad(gene::Gene, event::indexed_event, elapsed::Float64)
     ind = argmin(event.time)
     move_pols!(gene, elapsed)
     if gene.pol_state[ind] == "paused"
@@ -102,12 +102,21 @@ function removal(gene::Gene, event::indexed_event, elapsed::Float64)
         gene.events.pause.time[1] = Inf
     end
     update_speeds!(gene, ind)
-#    remove_pol!(gene, ind, prob=gene.vars["dropoff_reuse_p"])
-    p_reuse = (1/(gene.vars["dissoc"])) / (1/(gene.vars["dissoc"]) + 1/(gene.vars["degrad"]))
-    remove_pol!(gene, ind, prob=p_reuse)
+    remove_pol!(gene, ind, prob=0)
     return(nothing)
 end
 
+function dissoc(gene::Gene, event::indexed_event, elapsed::Float64)
+    ind = argmin(event.time)
+    move_pols!(gene, elapsed)
+    if gene.pol_state[ind] == "paused"
+        gene.events.release.time[1] = Inf
+        gene.events.pause.time[1] = Inf
+    end
+    update_speeds!(gene, ind)
+    remove_pol!(gene, ind, prob=1)
+    return(nothing)
+end
 
 
 # *** Complete - remove pol, and record completion event
