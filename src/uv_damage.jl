@@ -108,9 +108,10 @@ function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=f
              for g in keys(genes)
                  if genes[g].vars["genome_prop"] > pol_N
                      genes[g].events.initiate.time[1] = Inf
-            #     else
-            #         genes[g].events.initiate.time[1] = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
-            #         time_to_next[g] = min(time_to_next[g], genes[g].events.initiate.time[1])
+                 else
+                     t = random_time(v["initiation_period"] * v["pol_N"] / pol_N )[1]
+                     genes[g].events.initiate.time[1] = t + since_last[g]
+                     time_to_next[g] = nextEvent(genes[g])[1]
                  end
              end
             genes[ind].freedPols = 0
