@@ -756,7 +756,13 @@
 	 }
 
 	 if (typeof anim !== "undefined") {
-	     anim_data=anim;
+	     if (typeof anim_data =="undefined" ) {
+		 anim_data=anim;
+	     } else {
+		 anim_data.data=anim.data;
+		 anim_data.history=anim.history;
+		 anim_data.cartoons=anim.cartoons;
+	     }
 	     if (anim.hasOwnProperty('history')) {
 		 exportCSV(anim);
 	     }
