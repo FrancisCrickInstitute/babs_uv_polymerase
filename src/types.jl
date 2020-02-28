@@ -6,7 +6,7 @@ end
 function indexed_event(a::Float64)
     indexed_event([a], missing)
 end
-function indexed_event(a::Float64, Int64)
+function indexed_event(a::Float64, i::Int64)
     indexed_event([a], i)
 end
 
@@ -36,17 +36,17 @@ end
 
 # *** EventSet - all things that can happen to a polymerase and when
 struct EventSet
-initiate      ::indexed_event
-block         ::indexed_event
-bump          ::indexed_event
-release       ::indexed_event
-pause         ::indexed_event
-tally          ::indexed_event
-processivity  ::indexed_event
-dissoc        ::indexed_event
-degrad        ::indexed_event
-complete      ::indexed_event
-repair        ::indexed_event
+    initiate      ::indexed_event
+    block         ::indexed_event
+    bump          ::indexed_event
+    release       ::indexed_event
+    pause         ::indexed_event
+    tally         ::indexed_event
+    processivity  ::indexed_event
+    dissoc        ::indexed_event
+    degrad        ::indexed_event
+    complete      ::indexed_event
+    repair        ::indexed_event
     EventSet(;initiate=indexed_event(), block=indexed_event(), bump=indexed_event(), release=indexed_event(), pause=indexed_event(), tally=indexed_event(), processivity=indexed_event(Float64[]), dissoc=indexed_event(Float64[]), degrad=indexed_event(Float64[]), complete=indexed_event(), repair=indexed_event()) =
         new(initiate, block, bump, release, pause, tally, processivity, dissoc, degrad, complete, repair)
 end
@@ -54,21 +54,21 @@ end
 
 # ***  Gene - contains polymerase state, all scheduled events, and a history log
 mutable struct Gene
-events                 ::EventSet
-damage                 ::Array{Float64}
-pol_position           ::Vector{Float64}
-pol_speed              ::Vector{Float64}
-pol_state              ::Vector{String}
-pol_id                 ::Vector{Int64}
-next_id                ::Int64
-pol_N                  ::Float64
-default_speed          ::Float64
-tally_matrix            ::Array{Int64,2}
-time                   ::Float64
-vars                   ::Dict
-history                ::Dict
-loci                   ::Vector{Int64}
-freedPols              ::Int64
+    events                 ::EventSet
+    damage                 ::Array{Float64}
+    pol_position           ::Vector{Float64}
+    pol_speed              ::Vector{Float64}
+    pol_state              ::Vector{String}
+    pol_id                 ::Vector{Int64}
+    next_id                ::Int64
+    pol_N                  ::Float64
+    default_speed          ::Float64
+    tally_matrix            ::Array{Int64,2}
+    time                   ::Float64
+    vars                   ::Dict
+    history                ::Dict
+    loci                   ::Vector{Int64}
+    freedPols              ::Int64
 end
 
 function Gene(vars::Dict)
@@ -81,9 +81,9 @@ function Gene(vars::Dict)
                                length(damage))
     repairevent = indexed_event(repair_times,(length(damage)==0) ? missing : argmin(repair_times))
     events = EventSet(
-    initiate = indexed_event(random_time(vars["initiation_period"],1)),
-    repair = repairevent,
-    tally = indexed_event(Float64(0))
+        initiate = indexed_event(random_time(vars["initiation_period"],1)),
+        repair = repairevent,
+        tally = indexed_event(Float64(0))
     )
     loci = vcat(damage, 0, vars["pause_site"], vars["gene_length"])
     loci = reverse(sort(loci))

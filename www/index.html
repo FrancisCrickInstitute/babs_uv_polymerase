@@ -432,7 +432,7 @@
 	     .attr("class", "form-control col-4")
 	     .attr("value", d=>d.value.Value)
 	     .on("input", function(d,i){
-		 d.value.Value = (this.value==null)?null:+this.value;
+		 d.value.Value = (this.value==null | this.value=="")?null:+this.value;
 	     	 warn_recalc();
 	     });
 	 rows.filter(d => !d.value.Unit.includes("|")).append("span")

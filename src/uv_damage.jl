@@ -53,17 +53,17 @@ end
 function simulate(v::Dict{String, Any}, cell; sim_time=v["run_length"], record=false)
     gene_to_record=1
     io=IOBuffer()
-    genes = [Gene(merge(v,g)) for g in cell]
-    ss = [steady_state!(g) for g in genes]
+    genes = [uv_damage.Gene(merge(v,g)) for g in cell]
+    ss = [uv_damage.steady_state!(g) for g in genes]
     for g in keys(genes)
         genes[g].default_speed *= genes[g].vars["speed_factor_t0"]
         genes[g].pol_speed .*= genes[g].vars["speed_factor_t0"]
     end
     ntime=0
     time_left=sim_time
-    time_to_next = [nextEvent(g)[1] for g in genes]
+    time_to_next = [uv_damage.nextEvent(g)[1] for g in genes]
     since_last = [0.0 for g in genes]
-    pol_N = v["pol_N"];
+    pol_N = v["pol_N"]
     if record
         time_ord = sortperm(genes[gene_to_record].events.repair.time)
         write(io, "{\"damage\":" )
@@ -163,8 +163,8 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
     cartoon = Dict{String, String}()
     history = Dict()
     for scenario in scenarios
-        print(scenario)
         myvars = merge(vars, scenario)
+        print(myvars, "\n")
         ss_total=Array{Array{Int64,2}}(undef, length(cell))
         gene_total=Array{Array{Int64,2}}(undef, length(cell))
         ch=Array{Dict{Symbol,Int64}}(undef, length(cell))
@@ -175,7 +175,7 @@ function main(scenarios::Array{Dict{String, Any},1}, cell::Array{Dict{String, An
 	        Pages.message("/uv_damage", client_id, "script", "progress(\"$scen\",\"$i\")")
             end
             Random.seed!(i - 1 + task_id*n_iter);
-            (genes,ss,cartoon_data)=simulate(myvars, cell, record=i==1);
+            (genes,ss,cartoon_data)=simulate(myvars, cell, record=i==1)
             if (i==1)
                 cartoon[scenario["name"]] = cartoon_data
             end
