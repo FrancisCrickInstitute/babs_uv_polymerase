@@ -27,7 +27,7 @@ function steady_state!(gene::Gene)
     ## No block, repair, or tally
     steady_events = [:initiate :complete :processivity :pause :release :bump :dissoc :degrad]
     pol_N = gene.pol_N # keep topping up to this level
-    while gene.history[:complete]==0
+    while gene.history[:complete]==0 && gene.time < gene.vars["run_length"]
         update!(gene, events=steady_events) 
         gene.pol_N = pol_N
     end
