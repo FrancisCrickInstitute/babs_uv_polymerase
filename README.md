@@ -2,7 +2,7 @@
 ## Availability
 We currently have the following instances available for interactively
 using the simulator:
-* [Francis Crick Institute](http://51.104.223.167:8000/uv_damage)
+* [Francis Crick Institute](http://polymerase.crick.ac.uk:8000/uv_damage)
 
 ## Description
 A simulator of polymerase dynamics during transcription in the
