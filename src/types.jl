@@ -75,6 +75,7 @@ function Gene(vars::Dict)
 #    damage = find(rand(vars["gene_length"]) .< 1/vars["uv_distance"])
     damage= unique(rand(DiscreteUniform(1,vars["gene_length"]), rand(Binomial(vars["gene_length"], 1/vars["uv_distance"]))))
     #    damage = reshape(Float64.(damage), (1, length(damage)))
+    damage = [100000]
     damage=reverse(sort(damage))
 #    rate = log(2)/vars["repair_half_life"]
     repair_times = random_time(vars["repair_half_life"]/log(2),
